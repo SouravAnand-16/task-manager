@@ -34,6 +34,15 @@ const AdminDashboard = () => {
   const [tasksPage, setTasksPage] = useState(1);
   const [tasksTotalPages, setTasksTotalPages] = useState(1);
 
+  // Create tasks state
+  const [newTask, setNewTask] = useState({
+    title: "",
+    description: "",
+    dueDate: "",
+    assignedTo: "",
+  });
+
+
   // Filters
   const [assignedToFilter, setAssignedToFilter] = useState("");
   const [dueDateFilter, setDueDateFilter] = useState("");
@@ -42,6 +51,37 @@ const AdminDashboard = () => {
 
   // Selected tasks IDs (across pages)
   const [selectedTaskIds, setSelectedTaskIds] = useState(new Set());
+
+  const handleTaskInputChange = (e) => {
+    const { name, value } = e.target;
+    setNewTask((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleCreateTask = async () => {
+    if (
+      !newTask.title ||
+      !newTask.description ||
+      !newTask.dueDate ||
+      !newTask.assignedTo
+    ) {
+      return alert("All fields are required");
+    }
+
+    try {
+      const res = await fetch("/api/tasks", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newTask),
+      });
+      if (!res.ok) throw new Error("Failed to create task");
+      alert("Task created!");
+      setNewTask({ title: "", description: "", dueDate: "", assignedTo: "" });
+      loadTasks(tasksPage);
+    } catch (err) {
+      console.error("Create task failed:", err);
+    }
+  };
+
 
   // Load Users
    const loadUsers = async (page = 1) => {
@@ -150,51 +190,93 @@ const AdminDashboard = () => {
       <Typography variant="h5" gutterBottom>
         Users (Page {usersPage} of {usersTotalPages})
       </Typography>
-      <TableContainer component={Paper} sx={{ mb: 3 }}>
-        <Table sx={{ borderCollapse: "collapse" }}>
-          <TableHead sx={{ backgroundColor: "#f0f0f0" }}>
-            <TableRow>
-              <TableCell>Username</TableCell>
-              <TableCell>Role</TableCell>
-              <TableCell>Status</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {users.map((user) => (
-              <TableRow key={user._id}>
-                <TableCell>{user.username}</TableCell>
-                <TableCell>{user.role}</TableCell>
-                <TableCell>
-                  <Button
-                    size="small"
-                    variant="outlined"
-                    color={user.status === "active" ? "success" : "error"}
-                    sx={{ padding: '2px 6px', fontSize: '0.65rem',   minWidth: '60px',width: '60px', }}
-                    onClick={() =>
-                      handleToggleUserStatus(user._id, user.status)
-                    }
-                  >
-                    {user.status === "active" ? "🟢" : "🔴"}
-                  </Button>
-                </TableCell>
+      <Stack direction="row" spacing={4} sx={{ mb: 3 }} flexWrap="wrap">
+        {/* Users Table */}
+        <TableContainer component={Paper} sx={{ flex: 1, minWidth: "300px" }}>
+          <Table sx={{ borderCollapse: "collapse" }}>
+            <TableHead sx={{ backgroundColor: "#f0f0f0" }}>
+              <TableRow>
+                <TableCell>Username</TableCell>
+                <TableCell>Role</TableCell>
+                <TableCell>Status</TableCell>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
-      <Stack direction="row" spacing={2} sx={{ mb: 4 }}>
-        <Button
-          disabled={usersPage <= 1}
-          onClick={() => loadUsers(usersPage - 1)}
-        >
-          Previous
-        </Button>
-        <Button
-          disabled={usersPage >= usersTotalPages}
-          onClick={() => loadUsers(usersPage + 1)}
-        >
-          Next
-        </Button>
+            </TableHead>
+            <TableBody>
+              {users.map((user) => (
+                <TableRow key={user._id}>
+                  <TableCell>{user.username}</TableCell>
+                  <TableCell>{user.role}</TableCell>
+                  <TableCell>
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      color={user.status === "active" ? "success" : "error"}
+                      sx={{
+                        padding: "2px 6px",
+                        fontSize: "0.65rem",
+                        minWidth: "60px",
+                        width: "60px",
+                      }}
+                      onClick={() =>
+                        handleToggleUserStatus(user._id, user.status)
+                      }
+                    >
+                      {user.status === "active" ? "🟢" : "🔴"}
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+
+        {/* Create Task Form */}
+        <Paper elevation={3} sx={{ flex: 1, p: 2, minWidth: "300px" }}>
+          <Typography variant="h6">Create Task</Typography>
+          <input
+            type="text"
+            name="title"
+            placeholder="Title"
+            value={newTask.title}
+            onChange={handleTaskInputChange}
+            style={{ width: "100%", padding: "4px", marginBottom: "8px" }}
+          />
+          <textarea
+            name="description"
+            placeholder="Description"
+            value={newTask.description}
+            onChange={handleTaskInputChange}
+            style={{ width: "100%", padding: "4px", marginBottom: "8px" }}
+          />
+          <input
+            type="date"
+            name="dueDate"
+            value={newTask.dueDate}
+            onChange={handleTaskInputChange}
+            style={{ width: "100%", padding: "4px", marginBottom: "8px" }}
+          />
+          {/* Only show assignedTo dropdown if admin */}
+          {users.some((u) => u.role === "user") && (
+            <select
+              name="assignedTo"
+              value={newTask.assignedTo}
+              onChange={handleTaskInputChange}
+              style={{ width: "100%", padding: "4px", marginBottom: "8px" }}
+            >
+              <option value="">Assign to User</option>
+              {users
+                .filter((u) => u.role === "user")
+                .map((user) => (
+                  <option key={user._id} value={user._id}>
+                    {user.username}
+                  </option>
+                ))}
+            </select>
+          )}
+          <Button variant="contained" size="small" onClick={handleCreateTask}>
+            Create Task
+          </Button>
+        </Paper>
       </Stack>
       <Divider sx={{ my: 4 }} />
       {/* Tasks Section */}
