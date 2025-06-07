@@ -22,7 +22,7 @@ const AdminDashboard = () => {
     try {
       const token = localStorage.getItem('token');
       const res = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/admin/users?page=${page}&limit=${PAGE_SIZE}`,
+        `${process.env.REACT_APP_API_URL}/api/users?page=${page}&limit=${PAGE_SIZE}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setUsers(res.data.users);
@@ -38,7 +38,7 @@ const AdminDashboard = () => {
     try {
       const token = localStorage.getItem('token');
       const res = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/admin/tasks?page=${page}&limit=${PAGE_SIZE}`,
+        `${process.env.REACT_APP_API_URL}/api/tasks?page=${page}&limit=${PAGE_SIZE}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setTasks(res.data.tasks);
