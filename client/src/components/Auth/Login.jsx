@@ -17,10 +17,11 @@ const Login = () => {
         username,
         password,
       });
-
       const { token, user } = res.data;
       localStorage.setItem('token', token);
-      dispatch(setUser(user));
+      localStorage.setItem('user', JSON.stringify(user));
+
+      dispatch(setUser({ user, token }));
 
       if (user.role === 'admin') {
         navigate('/admin');
