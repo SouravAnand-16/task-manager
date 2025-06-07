@@ -95,6 +95,26 @@ const AdminDashboard = () => {
     }
   };
 
+   const toggleUserStatus = async (userId, currentStatus) => {
+    try {
+      const token = localStorage.getItem('token');
+      const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
+      await axios.patch(
+        `${process.env.REACT_APP_API_URL}/api/users/${userId}/status`,
+        { status: newStatus },
+        { headers: { Authorization: `Bearer ${token}` }, 'Content-Type': 'application/json' },
+      );
+      fetchUsers(usersPage);
+    } catch (err) {
+      console.error('Failed to toggle status:', err);
+    }
+  };
+
+  const getUsernameById = (id) => {
+    const user = users.find(u => u._id === id);
+    return user ? user.username : 'Unknown';
+  };
+
   useEffect(() => {
     fetchUsers(usersPage);
     fetchTasks(tasksPage);
@@ -120,7 +140,11 @@ const AdminDashboard = () => {
               <tr key={user._id}>
                 <td>{user.username}</td>
                 <td>{user.role}</td>
-                <td>{user.status}</td>
+                 <td>
+                  <button onClick={() => toggleUserStatus(user._id, user.status)}>
+                    {user.status === 'active' ? '🟢 Active' : '🔴 Inactive'}
+                  </button>
+                </td>
               </tr>
             ))}
           </tbody>
@@ -146,6 +170,7 @@ const AdminDashboard = () => {
               </th>
               <th>Title</th>
               <th>Description</th>
+              <th>Asigned to</th>
               <th>Completed</th>
               <th>Due Date</th>
             </tr>
@@ -162,8 +187,13 @@ const AdminDashboard = () => {
                 </td>
                 <td>{task.title}</td>
                 <td>{task.description}</td>
+                 <td>{getUsernameById(task.assignedTo)}</td>
                 <td>{task.completed ? 'Yes' : 'No'}</td>
                 <td>{task.dueDate ? new Date(task.dueDate).toLocaleDateString() : 'N/A'}</td>
+                 <td>
+                  <button title="Edit Task">✏️</button>
+                  <button title="Delete Task">🗑️</button>
+                </td>
               </tr>
             ))}
           </tbody>
