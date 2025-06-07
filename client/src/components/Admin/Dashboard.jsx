@@ -13,6 +13,7 @@ Button,
 Checkbox,
 Stack,
 Divider,
+Box
 } from '@mui/material';
 import {
   fetchUsers,
@@ -192,43 +193,65 @@ const AdminDashboard = () => {
       </Typography>
       <Stack direction="row" spacing={4} sx={{ mb: 3 }} flexWrap="wrap">
         {/* Users Table */}
-        <TableContainer component={Paper} sx={{ flex: 1, minWidth: "300px" }}>
-          <Table sx={{ borderCollapse: "collapse" }}>
-            <TableHead sx={{ backgroundColor: "#f0f0f0" }}>
-              <TableRow>
-                <TableCell>Username</TableCell>
-                <TableCell>Role</TableCell>
-                <TableCell>Status</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {users.map((user) => (
-                <TableRow key={user._id}>
-                  <TableCell>{user.username}</TableCell>
-                  <TableCell>{user.role}</TableCell>
-                  <TableCell>
-                    <Button
-                      size="small"
-                      variant="outlined"
-                      color={user.status === "active" ? "success" : "error"}
-                      sx={{
-                        padding: "2px 6px",
-                        fontSize: "0.65rem",
-                        minWidth: "60px",
-                        width: "60px",
-                      }}
-                      onClick={() =>
-                        handleToggleUserStatus(user._id, user.status)
-                      }
-                    >
-                      {user.status === "active" ? "🟢" : "🔴"}
-                    </Button>
-                  </TableCell>
+        <Box>
+          <TableContainer component={Paper} sx={{ flex: 1, minWidth: "300px" }}>
+            <Table sx={{ borderCollapse: "collapse" }}>
+              <TableHead sx={{ backgroundColor: "#f0f0f0" }}>
+                <TableRow>
+                  <TableCell>Username</TableCell>
+                  <TableCell>Role</TableCell>
+                  <TableCell sx={{ width: "60px" }}>Status</TableCell>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
+              </TableHead>
+              <TableBody>
+                {users.map((user) => (
+                  <TableRow key={user._id}>
+                    <TableCell>{user.username}</TableCell>
+                    <TableCell>{user.role}</TableCell>
+                    <TableCell>
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        color={user.status === "active" ? "success" : "error"}
+                        sx={{
+                          padding: "2px 6px",
+                          fontSize: "0.65rem",
+                          minWidth: "60px",
+                          width: "60px",
+                        }}
+                        onClick={() =>
+                          handleToggleUserStatus(user._id, user.status)
+                        }
+                      >
+                        {user.status === "active" ? "🟢" : "🔴"}
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+          <Box sx={{ mt: 2 }}>
+            <Stack direction="row" spacing={2}>
+              <Button
+                size="small"
+                variant="outlined"
+                disabled={usersPage <= 1}
+                onClick={() => loadUsers(usersPage - 1)}
+              >
+                Previous
+              </Button>
+              <Button
+                size="small"
+                variant="outlined"
+                disabled={usersPage >= usersTotalPages}
+                onClick={() => loadUsers(usersPage + 1)}
+              >
+                Next
+              </Button>
+            </Stack>
+          </Box>
+        </Box>
 
         {/* Create Task Form */}
         <Paper elevation={3} sx={{ flex: 1, p: 2, minWidth: "300px" }}>
@@ -248,7 +271,8 @@ const AdminDashboard = () => {
             onChange={handleTaskInputChange}
             style={{ width: "100%", padding: "4px", marginBottom: "8px" }}
           />
-          <input
+          <div style={{ display: "flex", flexDirection: "row", gap: "8px" }}>
+            <input
             type="date"
             name="dueDate"
             value={newTask.dueDate}
@@ -273,6 +297,7 @@ const AdminDashboard = () => {
                 ))}
             </select>
           )}
+          </div>
           <Button variant="contained" size="small" onClick={handleCreateTask}>
             Create Task
           </Button>
