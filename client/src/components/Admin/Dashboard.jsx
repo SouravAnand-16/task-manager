@@ -1,4 +1,19 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
+import {
+Container,
+Typography,
+Table,
+TableBody,
+TableCell,
+TableContainer,
+TableHead,
+TableRow,
+Paper,
+Button,
+Checkbox,
+Stack,
+Divider,
+} from '@mui/material';
 import {
   fetchUsers,
   toggleUserStatus,
@@ -18,6 +33,12 @@ const AdminDashboard = () => {
   const [tasks, setTasks] = useState([]);
   const [tasksPage, setTasksPage] = useState(1);
   const [tasksTotalPages, setTasksTotalPages] = useState(1);
+
+  // Filters
+  const [assignedToFilter, setAssignedToFilter] = useState("");
+  const [dueDateFilter, setDueDateFilter] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
+
 
   // Selected tasks IDs (across pages)
   const [selectedTaskIds, setSelectedTaskIds] = useState(new Set());
@@ -99,94 +120,192 @@ const AdminDashboard = () => {
     return user ? user.username : 'Unknown';
   };
 
+  const filteredTasks = tasks.filter((task) => {
+    const matchAssigned = assignedToFilter
+      ? getUsernameById(task.assignedTo)
+          .toLowerCase()
+          .includes(assignedToFilter.toLowerCase())
+      : true;
+    const matchStatus = statusFilter
+      ? statusFilter === "completed"
+        ? task.completed
+        : !task.completed
+      : true;
+    const matchDueDate = dueDateFilter
+      ? new Date(task.dueDate) <= new Date(dueDateFilter)
+      : true;
+    return matchAssigned && matchStatus && matchDueDate;
+  });
+
+
   useEffect(() => {
     loadUsers(usersPage);
     loadTasks(tasksPage);
   }, []);
 
   return (
-    <div style={{ padding: '1rem' }}>
-      <h1>Admin Dashboard</h1>
-
-      <section>
-        <h2>Users (Page {usersPage} of {usersTotalPages})</h2>
-        <table border="1" cellPadding="5" style={{ width: '100%', marginBottom: '1rem' }}>
-          <thead>
-            <tr>
-              <th>Username</th>
-              <th>Role</th>
-              <th>Status</th>
-              {/* Add UI for changing user status here if needed */}
-            </tr>
-          </thead>
-          <tbody>
-            {users.map(user => (
-              <tr key={user._id}>
-                <td>{user.username}</td>
-                <td>{user.role}</td>
-                 <td>
-                  <button onClick={() => handleToggleUserStatus(user._id, user.status)}>
-                    {user.status === 'active' ? '🟢 Active' : '🔴 Inactive'}
-                  </button>
-                </td>
-              </tr>
+    <Container maxWidth="lg" sx={{ mt: 4 }}>
+      Admin Dashboard
+      {/* Users Section */}
+      <Typography variant="h5" gutterBottom>
+        Users (Page {usersPage} of {usersTotalPages})
+      </Typography>
+      <TableContainer component={Paper} sx={{ mb: 3 }}>
+        <Table sx={{ borderCollapse: "collapse" }}>
+          <TableHead sx={{ backgroundColor: "#f0f0f0" }}>
+            <TableRow>
+              <TableCell>Username</TableCell>
+              <TableCell>Role</TableCell>
+              <TableCell>Status</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {users.map((user) => (
+              <TableRow key={user._id}>
+                <TableCell>{user.username}</TableCell>
+                <TableCell>{user.role}</TableCell>
+                <TableCell>
+                  <Button
+                    size="small"
+                    variant="outlined"
+                    color={user.status === "active" ? "success" : "error"}
+                    sx={{ padding: '2px 6px', fontSize: '0.65rem',   minWidth: '60px',width: '60px', }}
+                    onClick={() =>
+                      handleToggleUserStatus(user._id, user.status)
+                    }
+                  >
+                    {user.status === "active" ? "🟢" : "🔴"}
+                  </Button>
+                </TableCell>
+              </TableRow>
             ))}
-          </tbody>
-        </table>
-        <button disabled={usersPage <= 1} onClick={() => loadUsers(usersPage - 1)}>Previous</button>
-        <button disabled={usersPage >= usersTotalPages} onClick={() => loadUsers(usersPage + 1)}>Next</button>
-      </section>
-
-      <section>
-        <h2>Tasks (Page {tasksPage} of {tasksTotalPages})</h2>
-        <p>Selected Tasks: {selectedTaskIds.size}</p>
-        <button onClick={() => handleBulkTaskStatus('completed')}>Mark Completed</button>
-        <button onClick={() => handleBulkTaskStatus('pending')}>Mark Pending</button>
-        <table border="1" cellPadding="5" style={{ width: '100%', marginTop: '1rem' }}>
-          <thead>
-            <tr>
-              <th>
-                <input
-                  type="checkbox"
-                  checked={tasks.length > 0 && tasks.every(task => selectedTaskIds.has(task._id))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+      <Stack direction="row" spacing={2} sx={{ mb: 4 }}>
+        <Button
+          disabled={usersPage <= 1}
+          onClick={() => loadUsers(usersPage - 1)}
+        >
+          Previous
+        </Button>
+        <Button
+          disabled={usersPage >= usersTotalPages}
+          onClick={() => loadUsers(usersPage + 1)}
+        >
+          Next
+        </Button>
+      </Stack>
+      <Divider sx={{ my: 4 }} />
+      {/* Tasks Section */}
+      <Typography variant="h5" gutterBottom>
+        Tasks (Page {tasksPage} of {tasksTotalPages})
+      </Typography>
+      <Typography variant="body1">
+        Selected Tasks: {selectedTaskIds.size}
+      </Typography>
+      <div
+        style={{
+          display: "flex",
+          gap: "8px",
+          alignItems: "center",
+          marginBottom: "0.5rem",
+        }}
+      >
+        <button
+          style={{ padding: "4px 8px", fontSize: "0.8rem" }}
+          onClick={() => handleBulkTaskStatus("completed")}
+        >
+          ✅ Completed
+        </button>
+        <button
+          style={{ padding: "4px 8px", fontSize: "0.8rem" }}
+          onClick={() => handleBulkTaskStatus("pending")}
+        >
+          🕓 Pending
+        </button>
+        <input
+          type="text"
+          placeholder="Filter by User"
+          value={assignedToFilter}
+          onChange={(e) => setAssignedToFilter(e.target.value)}
+          style={{ padding: "4px", fontSize: "0.8rem", width: "130px" }}
+        />
+        <input
+          type="date"
+          value={dueDateFilter}
+          onChange={(e) => setDueDateFilter(e.target.value)}
+          style={{ padding: "4px", fontSize: "0.8rem" }}
+        />
+        <select
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+          style={{ padding: "4px", fontSize: "0.8rem", width: "130px" }}
+        >
+          <option value="">All Status</option>
+          <option value="completed">Completed</option>
+          <option value="pending">Pending</option>
+        </select>
+      </div>
+      <TableContainer component={Paper}>
+        <Table sx={{ borderCollapse: "collapse" }}>
+          <TableHead sx={{ backgroundColor: "#f0f0f0" }}>
+            <TableRow>
+              <TableCell padding="checkbox">
+                <Checkbox
+                  checked={
+                    tasks.length > 0 &&
+                    tasks.every((task) => selectedTaskIds.has(task._id))
+                  }
                   onChange={toggleSelectAll}
                 />
-              </th>
-              <th>Title</th>
-              <th>Description</th>
-              <th>Asigned to</th>
-              <th>Completed</th>
-              <th>Due Date</th>
-            </tr>
-          </thead>
-          <tbody>
-            {tasks.map(task => (
-              <tr key={task._id}>
-                <td>
-                  <input
-                    type="checkbox"
+              </TableCell>
+              <TableCell>Title</TableCell>
+              <TableCell>Description</TableCell>
+              <TableCell>Assigned To</TableCell>
+              <TableCell>Completed</TableCell>
+              <TableCell>Due Date</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {filteredTasks.map((task) => (
+              <TableRow key={task._id}>
+                <TableCell padding="checkbox">
+                  <Checkbox
                     checked={selectedTaskIds.has(task._id)}
                     onChange={() => toggleTaskSelection(task._id)}
                   />
-                </td>
-                <td>{task.title}</td>
-                <td>{task.description}</td>
-                 <td>{getUsernameById(task.assignedTo)}</td>
-                <td>{task.completed ? 'Yes' : 'No'}</td>
-                <td>{task.dueDate ? new Date(task.dueDate).toLocaleDateString() : 'N/A'}</td>
-                 <td>
-                  <button title="Edit Task">✏️</button>
-                  <button title="Delete Task">🗑️</button>
-                </td>
-              </tr>
+                </TableCell>
+                <TableCell>{task.title}</TableCell>
+                <TableCell>{task.description}</TableCell>
+                <TableCell>{getUsernameById(task.assignedTo)}</TableCell>
+                <TableCell>{task.completed ? "Yes" : "No"}</TableCell>
+                <TableCell>
+                  {task.dueDate
+                    ? new Date(task.dueDate).toLocaleDateString()
+                    : "N/A"}
+                </TableCell>
+              </TableRow>
             ))}
-          </tbody>
-        </table>
-        <button disabled={tasksPage <= 1} onClick={() => loadTasks(tasksPage - 1)}>Previous</button>
-        <button disabled={tasksPage >= tasksTotalPages} onClick={() => loadTasks(tasksPage + 1)}>Next</button>
-      </section>
-    </div>
+          </TableBody>
+        </Table>
+      </TableContainer>
+      <Stack direction="row" spacing={2} sx={{ mt: 2 }}>
+        <Button
+          disabled={tasksPage <= 1}
+          onClick={() => loadTasks(tasksPage - 1)}
+        >
+          Previous
+        </Button>
+        <Button
+          disabled={tasksPage >= tasksTotalPages}
+          onClick={() => loadTasks(tasksPage + 1)}
+        >
+          Next
+        </Button>
+      </Stack>
+    </Container>
   );
-};
+}
 
 export default AdminDashboard;
