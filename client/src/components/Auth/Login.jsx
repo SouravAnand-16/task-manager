@@ -1,7 +1,11 @@
-import React, { useState } from 'react';
-import axios from 'axios';
+import { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
+
+import {
+  loginUser
+} from '../../utils/util';
+
 import { setUser } from '../../redux/userSlice';
 
 const Login = () => {
@@ -13,23 +17,16 @@ const Login = () => {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post(`${process.env.REACT_APP_API_URL}/api/auth/login`, {
-        username,
-        password,
-      });
-      const { token, user } = res.data;
-      localStorage.setItem('token', token);
-      localStorage.setItem('user', JSON.stringify(user));
+      const { token, user } = await loginUser(username, password);
+
+      localStorage.setItem("token", token);
+      localStorage.setItem("user", JSON.stringify(user));
 
       dispatch(setUser({ user, token }));
 
-      if (user.role === 'admin') {
-        navigate('/admin');
-      } else {
-        navigate('/user');
-      }
+      navigate(user.role === "admin" ? "/admin" : "/user");
     } catch (err) {
-      alert(err.response?.data?.message || 'Login failed');
+      alert(err.response?.data?.message || "Login failed");
     }
   };
 

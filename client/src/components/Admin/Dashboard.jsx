@@ -1,5 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import {
+  fetchUsers,
+  toggleUserStatus,
+  fetchTasks,
+  bulkUpdateTaskStatus,
+} from '../../../src/utils/util';
 
 const PAGE_SIZE = 5;
 
@@ -17,35 +22,37 @@ const AdminDashboard = () => {
   // Selected tasks IDs (across pages)
   const [selectedTaskIds, setSelectedTaskIds] = useState(new Set());
 
-  // Load users page
-  const fetchUsers = async (page = 1) => {
+  // Load Users
+   const loadUsers = async (page = 1) => {
     try {
-      const token = localStorage.getItem('token');
-      const res = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/users?page=${page}&limit=${PAGE_SIZE}`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      setUsers(res.data.users);
-      setUsersTotalPages(res.data.totalPages);
+      const data = await fetchUsers(page, PAGE_SIZE);
+      setUsers(data.users);
+      setUsersTotalPages(data.totalPages);
       setUsersPage(page);
-    } catch (error) {
-      console.error('Error fetching users', error);
+    } catch (err) {
+      console.error('Error loading users:', err);
     }
   };
 
-  // Load tasks page
-  const fetchTasks = async (page = 1) => {
+  //Load Tasks
+  const loadTasks = async (page = 1) => {
     try {
-      const token = localStorage.getItem('token');
-      const res = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/tasks?page=${page}&limit=${PAGE_SIZE}`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      setTasks(res.data.tasks);
-      setTasksTotalPages(res.data.totalPages);
+      const data = await fetchTasks(page, PAGE_SIZE);
+      setTasks(data.tasks);
+      setTasksTotalPages(data.totalPages);
       setTasksPage(page);
-    } catch (error) {
-      console.error('Error fetching tasks', error);
+    } catch (err) {
+      console.error('Error loading tasks:', err);
+    }
+  };
+
+  // Toggle user status
+  const handleToggleUserStatus = async (userId, currentStatus) => {
+    try {
+      await toggleUserStatus(userId, currentStatus);
+      loadUsers(usersPage);
+    } catch (err) {
+      console.error('Failed to update user status:', err);
     }
   };
 
@@ -75,38 +82,15 @@ const AdminDashboard = () => {
   };
 
   // Bulk update status
-  const bulkUpdateStatus = async (newStatus) => {
-    if (selectedTaskIds.size === 0) {
-      alert('Select tasks to update');
-      return;
-    }
+   const handleBulkTaskStatus = async (newStatus) => {
+    if (selectedTaskIds.size === 0) return alert('Select tasks to update');
     try {
-      const token = localStorage.getItem('token');
-      await axios.put(
-        `${process.env.REACT_APP_API_URL}/api/admin/tasks/bulk-update-status`,
-        { taskIds: Array.from(selectedTaskIds), status: newStatus },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      await bulkUpdateTaskStatus(Array.from(selectedTaskIds), newStatus);
       alert('Tasks updated');
-      fetchTasks(tasksPage);
+      loadTasks(tasksPage);
       setSelectedTaskIds(new Set());
-    } catch (error) {
-      console.error('Error updating tasks', error);
-    }
-  };
-
-   const toggleUserStatus = async (userId, currentStatus) => {
-    try {
-      const token = localStorage.getItem('token');
-      const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
-      await axios.patch(
-        `${process.env.REACT_APP_API_URL}/api/users/${userId}/status`,
-        { status: newStatus },
-        { headers: { Authorization: `Bearer ${token}` }, 'Content-Type': 'application/json' },
-      );
-      fetchUsers(usersPage);
     } catch (err) {
-      console.error('Failed to toggle status:', err);
+      console.error('Error updating tasks:', err);
     }
   };
 
@@ -116,8 +100,8 @@ const AdminDashboard = () => {
   };
 
   useEffect(() => {
-    fetchUsers(usersPage);
-    fetchTasks(tasksPage);
+    loadUsers(usersPage);
+    loadTasks(tasksPage);
   }, []);
 
   return (
@@ -141,7 +125,7 @@ const AdminDashboard = () => {
                 <td>{user.username}</td>
                 <td>{user.role}</td>
                  <td>
-                  <button onClick={() => toggleUserStatus(user._id, user.status)}>
+                  <button onClick={() => handleToggleUserStatus(user._id, user.status)}>
                     {user.status === 'active' ? '🟢 Active' : '🔴 Inactive'}
                   </button>
                 </td>
@@ -149,15 +133,15 @@ const AdminDashboard = () => {
             ))}
           </tbody>
         </table>
-        <button disabled={usersPage <= 1} onClick={() => fetchUsers(usersPage - 1)}>Previous</button>
-        <button disabled={usersPage >= usersTotalPages} onClick={() => fetchUsers(usersPage + 1)}>Next</button>
+        <button disabled={usersPage <= 1} onClick={() => loadUsers(usersPage - 1)}>Previous</button>
+        <button disabled={usersPage >= usersTotalPages} onClick={() => loadUsers(usersPage + 1)}>Next</button>
       </section>
 
       <section>
         <h2>Tasks (Page {tasksPage} of {tasksTotalPages})</h2>
         <p>Selected Tasks: {selectedTaskIds.size}</p>
-        <button onClick={() => bulkUpdateStatus('completed')}>Mark Completed</button>
-        <button onClick={() => bulkUpdateStatus('pending')}>Mark Pending</button>
+        <button onClick={() => handleBulkTaskStatus('completed')}>Mark Completed</button>
+        <button onClick={() => handleBulkTaskStatus('pending')}>Mark Pending</button>
         <table border="1" cellPadding="5" style={{ width: '100%', marginTop: '1rem' }}>
           <thead>
             <tr>
@@ -198,8 +182,8 @@ const AdminDashboard = () => {
             ))}
           </tbody>
         </table>
-        <button disabled={tasksPage <= 1} onClick={() => fetchTasks(tasksPage - 1)}>Previous</button>
-        <button disabled={tasksPage >= tasksTotalPages} onClick={() => fetchTasks(tasksPage + 1)}>Next</button>
+        <button disabled={tasksPage <= 1} onClick={() => loadTasks(tasksPage - 1)}>Previous</button>
+        <button disabled={tasksPage >= tasksTotalPages} onClick={() => loadTasks(tasksPage + 1)}>Next</button>
       </section>
     </div>
   );
