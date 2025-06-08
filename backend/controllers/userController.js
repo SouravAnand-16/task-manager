@@ -1,8 +1,27 @@
 const User = require('../models/User');
 
 exports.getUsers = async (req, res) => {
-  const users = await User.find({}, '-password');
-  res.json({users});
+  const page = parseInt(req.query.page) || 1;
+  const limit = 5;
+  const skip = (page - 1) * limit;
+  try {
+    if (req.user.role !== "admin") {
+      return res
+        .status(403)
+        .json({ message: "Access denied: Only admins can view users" });
+    }
+    const users = await User.find({}, '-password')
+      .skip(skip)
+      .limit(limit)
+      .sort({ createdAt: -1 });
+
+    const total = await User.countDocuments();
+
+    res.json({ users, total, page, limit });
+  } catch (error) {
+    console.error("Error fetching users:", error);
+    res.status(500).json({ message: "Failed to fetch users" });
+  }
 };
 
 exports.updateStatus = async (req, res) => {
