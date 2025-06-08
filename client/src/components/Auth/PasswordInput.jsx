@@ -1,6 +1,8 @@
 import { useState } from 'react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 
-const PasswordInput = ({ value, onChange }) => {
+const PasswordInput = ({ value, onChange, errors }) => {
   const [showPassword, setShowPassword] = useState(false);
 
   return (
@@ -16,6 +18,8 @@ const PasswordInput = ({ value, onChange }) => {
           paddingRight: '30px',
           boxSizing: 'border-box',
         }}
+        aria-invalid={!!errors.password}
+        aria-describedby={errors.password ? "username-error" : undefined}
       />
       <span
         onClick={() => setShowPassword(!showPassword)}
@@ -31,8 +35,21 @@ const PasswordInput = ({ value, onChange }) => {
         }}
         aria-label={showPassword ? "Hide password" : "Show password"}
       >
-        {showPassword ? '👁️‍🗨️' : '👁️'}
+        <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} />
       </span>
+       {errors && (
+        <span
+          id="password-error"
+          role="alert"
+          aria-live="assertive"
+          style={{
+            color: 'red',  
+            fontSize: '12px',
+            marginTop: '5px',}}
+        >
+          {errors.password || ''}
+        </span>
+      )}
     </div>
   );
 };

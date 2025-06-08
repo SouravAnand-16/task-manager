@@ -4,18 +4,20 @@ import { useNavigate } from 'react-router-dom';
 
 import { loginUser } from '../../utils/util';
 import { setUser } from '../../redux/userSlice';
-import PasswordInput from './PasswordInput'; // Assuming you have a PasswordInput component
+import PasswordInput from './PasswordInput';
 
 const Login = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
   const [loading, setLoading] = useState(false);
+   const [errors, setErrors] = useState({ username: '', password: '' });
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    setErrors({ username: "", password: "" });
     setLoading(true);
     try {
       const { token, user } = await loginUser(username, password);
@@ -31,7 +33,15 @@ const Login = () => {
       dispatch(setUser({ user, token }));
       navigate(user.role === "admin" ? "/admin" : "/user");
     } catch (err) {
-      alert(err.response?.data?.message || "Login failed");
+      const message = err.response?.data?.message || "Login failed";
+
+      if (message === "User not found") {
+        setErrors({ username: message });
+      } else if (message === "Invalid credentiala") {
+        setErrors({ password: message });
+      } else {
+        alert(message);
+      }
     } finally {
       setLoading(false);
     }
@@ -48,10 +58,23 @@ const Login = () => {
           value={username}
           onChange={(e) => setUsername(e.target.value)}
           style={styles.input}
+          aria-invalid={!!errors.username}
+          aria-describedby={errors.username ? "username-error" : undefined}
         />
+        {errors.username && (
+          <span
+            id="username-error"
+            role="alert"
+            aria-live="assertive"
+            style={styles.error}
+          >
+            {errors.username}
+          </span>
+        )}
         <PasswordInput
           value={password}
           onChange={(e) => setPassword(e.target.value)}
+          errors={errors}
         />
         <button type="submit" disabled={loading} style={styles.button}>
           {loading ? (
@@ -69,48 +92,54 @@ const Login = () => {
 
 const styles = {
   container: {
-    height: '100vh',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    background: '#f4f6f8',
+    height: "100vh",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    background: "#f4f6f8",
   },
   form: {
-    padding: '30px',
-    width: '300px',
-    borderRadius: '12px',
-    background: '#fff',
-    boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '16px',
+    padding: "30px",
+    width: "300px",
+    borderRadius: "12px",
+    background: "#fff",
+    boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+    display: "flex",
+    flexDirection: "column",
+    gap: "16px",
   },
   title: {
     margin: 0,
-    textAlign: 'center',
-    color: '#333',
+    textAlign: "center",
+    color: "#333",
   },
   input: {
-    padding: '10px 12px',
-    fontSize: '14px',
-    borderRadius: '6px',
-    border: '1px solid #ccc',
-    outline: 'none',
+    padding: "10px 12px",
+    fontSize: "14px",
+    borderRadius: "6px",
+    border: "1px solid #ccc",
+    outline: "none",
   },
   label: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '6px',
+    display: "flex",
+    alignItems: "center",
+    gap: "6px",
   },
   button: {
-    padding: '10px 12px',
-    fontSize: '14px',
-    borderRadius: '6px',
-    border: 'none',
-    backgroundColor: '#1976d2',
-    color: '#fff',
-    cursor: 'pointer',
-    transition: 'background 0.3s ease',
+    padding: "10px 12px",
+    fontSize: "14px",
+    borderRadius: "6px",
+    border: "none",
+    backgroundColor: "#1976d2",
+    color: "#fff",
+    cursor: "pointer",
+    transition: "background 0.3s ease",
+  },
+  error: {
+    color: "red",
+    fontSize: "12px",
+    marginTop: "-10px",
+    marginBottom: "8px",
   },
 };
 
