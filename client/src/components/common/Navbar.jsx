@@ -76,7 +76,7 @@ const Navbar = () => {
                 flexWrap: "wrap",
               }}
             >
-              <Typography>Welcome, {user.username?.toUpperCase()}</Typography>
+              {/* <Typography>Welcome, {user.username?.toUpperCase()}</Typography> */}
               {user.role === "admin" ? (
                 <Button color="inherit" component={Link} to="/admin">
                   Admin Panel

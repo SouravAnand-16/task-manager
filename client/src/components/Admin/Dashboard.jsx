@@ -157,7 +157,7 @@ const AdminDashboard = () => {
 
   const getUsernameById = (id) => {
     const user = users.find(u => u._id === id);
-    return user ? user.username : 'Unknown';
+    return user ? user.username?.toUpperCase() : 'Unknown';
   };
 
   const filteredTasks = tasks.filter((task) => {
@@ -197,16 +197,16 @@ const AdminDashboard = () => {
             <Table sx={{ borderCollapse: "collapse" }}>
               <TableHead sx={{ backgroundColor: "#f0f0f0" }}>
                 <TableRow>
-                  <TableCell>Username</TableCell>
-                  <TableCell>Role</TableCell>
-                  <TableCell sx={{ width: "60px" }}>Status</TableCell>
+                  <TableCell sx={{ fontWeight: "bold" }}>Username</TableCell>
+                  <TableCell sx={{ fontWeight: "bold" }}>Role</TableCell>
+                  <TableCell sx={{ width: "60px", fontWeight:"bold" }}>Status</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 {users.map((user) => (
                   <TableRow key={user._id}>
-                    <TableCell>{user.username}</TableCell>
-                    <TableCell>{user.role}</TableCell>
+                    <TableCell sx={{fontStyle: "italic",color: "#888"}}>{user.username?.toUpperCase()}</TableCell>
+                    <TableCell sx={{fontStyle: "italic",color: "#888"}}>{user.role}</TableCell>
                     <TableCell>
                       <Button
                         size="small"
@@ -341,7 +341,7 @@ const AdminDashboard = () => {
           }}
           onClick={() => handleBulkTaskStatus("pending")}
         >
-          🕓 Pending
+          ❌ Pending
         </button>
         <input
           type="text"
@@ -367,48 +367,68 @@ const AdminDashboard = () => {
         </select>
       </div>
       <TableContainer component={Paper}>
-        <Table sx={{ borderCollapse: "collapse" }}>
-          <TableHead sx={{ backgroundColor: "#f0f0f0" }}>
-            <TableRow>
-              <TableCell padding="checkbox">
-                <Checkbox
-                  checked={
-                    tasks.length > 0 &&
-                    tasks.every((task) => selectedTaskIds.has(task._id))
-                  }
-                  onChange={toggleSelectAll}
-                />
-              </TableCell>
-              <TableCell>Title</TableCell>
-              <TableCell>Description</TableCell>
-              <TableCell>Assigned To</TableCell>
-              <TableCell>Completed</TableCell>
-              <TableCell>Due Date</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {filteredTasks.map((task) => (
-              <TableRow key={task._id}>
-                <TableCell padding="checkbox">
-                  <Checkbox
-                    checked={selectedTaskIds.has(task._id)}
-                    onChange={() => toggleTaskSelection(task._id)}
-                  />
-                </TableCell>
-                <TableCell>{task.title}</TableCell>
-                <TableCell>{task.description}</TableCell>
-                <TableCell>{getUsernameById(task.assignedTo)}</TableCell>
-                <TableCell>{task.completed ? "Yes" : "No"}</TableCell>
-                <TableCell>
-                  {task.dueDate
-                    ? new Date(task.dueDate).toLocaleDateString()
-                    : "N/A"}
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
+  <Table sx={{ borderCollapse: "collapse" }}>
+    <TableHead sx={{ backgroundColor: "#f0f0f0" }}>
+      <TableRow>
+        <TableCell padding="checkbox" sx={{ fontWeight: "bold" }}>
+          <Checkbox
+            checked={
+              tasks.length > 0 &&
+              tasks.every((task) => selectedTaskIds.has(task._id))
+            }
+            onChange={toggleSelectAll}
+          />
+        </TableCell>
+        <TableCell sx={{ fontWeight: "bold" }}>Title</TableCell>
+        <TableCell sx={{ fontWeight: "bold" }}>Description</TableCell>
+        <TableCell sx={{ fontWeight: "bold" }}>Assigned To</TableCell>
+        <TableCell sx={{ fontWeight: "bold" }}>Status</TableCell>
+        <TableCell sx={{ fontWeight: "bold" }}>Due Date</TableCell>
+      </TableRow>
+    </TableHead>
+    <TableBody>
+      {filteredTasks.map((task) => (
+        <TableRow key={task._id}>
+          <TableCell padding="checkbox" sx={{ fontWeight: "bold" }}>
+            <Checkbox
+              checked={selectedTaskIds.has(task._id)}
+              onChange={() => toggleTaskSelection(task._id)}
+            />
+          </TableCell>
+          <TableCell
+            sx={{
+              fontWeight: 600,
+              color: "#555", 
+            }}
+          >
+            {task.title}
+          </TableCell>
+          <TableCell
+            sx={{
+              fontStyle: "italic",
+              color: "#888", 
+            }}
+          >
+            {task.description}
+          </TableCell>
+          <TableCell sx={{fontStyle: "italic",color: "#888"}}>{getUsernameById(task.assignedTo)}</TableCell>
+          <TableCell>{task.completed ? "✅" : "❌"}</TableCell>
+          <TableCell
+            sx={{
+              fontStyle: "italic",
+              color: "#e69500", 
+            }}
+          >
+            {task.dueDate
+              ? new Date(task.dueDate).toLocaleDateString()
+              : "N/A"}
+          </TableCell>
+        </TableRow>
+      ))}
+    </TableBody>
+  </Table>
+</TableContainer>
+
       <Stack direction="row" spacing={2} sx={{ mt: 2 }}>
         <Button
           disabled={tasksPage <= 1}
@@ -427,6 +447,26 @@ const AdminDashboard = () => {
   );
 }
 
-// const styles = {};
+const styles = {
+  headerCell: {
+    fontWeight: 'bold',
+  },
+  checkboxCell: {
+    fontWeight: 'bold',
+  },
+  titleCell: {
+    fontWeight: 600,
+    color: '#555', 
+  },
+  descriptionCell: {
+    fontStyle: 'italic',
+    color: '#888', 
+  },
+  dueDateCell: {
+    fontStyle: 'italic',
+    color: '#e69500', 
+  },
+};
+
 
 export default AdminDashboard;
