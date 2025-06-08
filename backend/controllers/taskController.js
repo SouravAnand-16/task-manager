@@ -53,6 +53,43 @@ exports.getTasks = async (req, res) => {
   }
 };
 
+exports.updateTask = async (req, res) => {
+  const { taskId } = req.params;
+  const { title, description, completed, dueDate, assignedTo } = req.body;
+
+  try {
+    const task = await Task.findById(taskId);
+    if (!task) {
+      return res.status(404).json({ message: "Task not found" });
+    }
+
+    if (req.user.role === "admin") {
+      if (!assignedTo) {
+        return res
+          .status(400)
+          .json({ message: "assignedTo is required when admin updates task" });
+      }
+      task.assignedTo = assignedTo;
+    } else if (task.assignedTo.toString() !== req.user._id.toString()) {
+      return res
+        .status(403)
+        .json({ message: "You can only update your own tasks" });
+    }
+
+    if (title !== undefined) task.title = title;
+    if (description !== undefined) task.description = description;
+    if (dueDate !== undefined) task.dueDate = dueDate;
+    if (completed !== undefined) task.completed = completed;
+
+    await task.save();
+    res.json(task);
+  } catch (error) {
+    console.error("Error updating task:", error);
+    res.status(500).json({ message: "Failed to update task" });
+  }
+};
+
+
 
 exports.bulkUpdateTasks = async (req, res) => {
   const { taskIds, updateData } = req.body;
