@@ -89,8 +89,6 @@ exports.updateTask = async (req, res) => {
   }
 };
 
-
-
 exports.bulkUpdateTasks = async (req, res) => {
   const { taskIds, updateData } = req.body;
 

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useSelector } from 'react-redux'
 import {
   Container,
   Typography,
@@ -35,6 +36,7 @@ import {
 const PAGE_SIZE = 5;
 
 const AdminDashboard = () => {
+  const { user } = useSelector((state) => state.user);
   // Users state
   const [users, setUsers] = useState([]);
   const [usersPage, setUsersPage] = useState(1);
@@ -58,6 +60,17 @@ const AdminDashboard = () => {
   const [editTask, setEditTask] = useState(null);
   const [loadingIds, setLoadingIds] = useState(new Set());
 
+  //Bulk Task State
+  const [bulkModalOpen, setBulkModalOpen] = useState(false);
+  const [bulkUpdateData, setBulkUpdateData] = useState({
+    title: "",
+    description: "",
+    completed: false,
+    dueDate: "",
+    assignedTo: "",
+  });
+  const [bulkLoading, setBulkLoading] = useState(false);
+
   const handleOpenEdit = (task) => {
     setEditTask(task);
     setEditOpen(true);
@@ -67,39 +80,39 @@ const AdminDashboard = () => {
     setEditOpen(false);
     setEditTask(null);
   };
-  
+
   const handleEditInputChange = (e) => {
     const { name, value } = e.target;
-    setEditTask(prev => ({ ...prev, [name]: value }));
+    setEditTask((prev) => ({ ...prev, [name]: value }));
   };
-  
+
   const handleUpdateTask = async () => {
     if (!editTask) return;
-    setLoadingIds(prev => new Set(prev).add(editTask._id));
+    setLoadingIds((prev) => new Set(prev).add(editTask._id));
     try {
-      await updateTask(editTask._id, editTask); 
+      await updateTask(editTask._id, editTask);
       alert("Task updated");
       loadTasks(tasksPage);
       handleCloseEdit();
     } catch (err) {
       console.error("Update failed", err);
     } finally {
-      setLoadingIds(prev => {
+      setLoadingIds((prev) => {
         const newSet = new Set(prev);
         newSet.delete(editTask._id);
         return newSet;
       });
     }
   };
-  
+
   const handleDeleteTask = async (taskId) => {
     if (!window.confirm("Are you sure to delete this task?")) return;
-    setLoadingIds(prev => new Set(prev).add(taskId));
+    setLoadingIds((prev) => new Set(prev).add(taskId));
     try {
-      await deleteTask(taskId); 
+      await deleteTask(taskId);
       alert("Task deleted");
       loadTasks(tasksPage);
-      setSelectedTaskIds(prev => {
+      setSelectedTaskIds((prev) => {
         const newSet = new Set(prev);
         newSet.delete(taskId);
         return newSet;
@@ -107,7 +120,7 @@ const AdminDashboard = () => {
     } catch (err) {
       console.error("Delete failed", err);
     } finally {
-      setLoadingIds(prev => {
+      setLoadingIds((prev) => {
         const newSet = new Set(prev);
         newSet.delete(taskId);
         return newSet;
@@ -116,7 +129,7 @@ const AdminDashboard = () => {
   };
 
   const [loading, setLoading] = useState(false);
-  const [loadingButton, setLoadingButton] = useState(null); 
+  const [loadingButton, setLoadingButton] = useState(null);
   // Filters
   const [assignedToFilter, setAssignedToFilter] = useState("");
   const [dueDateFilter, setDueDateFilter] = useState("");
@@ -213,17 +226,55 @@ const AdminDashboard = () => {
   };
 
   // Bulk update status
-  const handleBulkTaskStatus = async (newStatus) => {
-    if (selectedTaskIds.size === 0) return alert("Select tasks to update");
-    try {
-      await bulkUpdateTaskStatus(Array.from(selectedTaskIds), newStatus);
-      alert("Tasks updated");
-      loadTasks(tasksPage);
-      setSelectedTaskIds(new Set());
-    } catch (err) {
-      console.error("Error updating tasks:", err);
-    }
-  };
+ const handleBulkUpdate = async () => {
+   setBulkLoading(true);
+
+   const getCleanUpdateData = (rawData) => {
+     const cleaned = {};
+     for (const key in rawData) {
+       const value = rawData[key];
+       if (
+         (typeof value === "string" && value.trim() !== "") ||
+         typeof value === "boolean" ||
+         (typeof value === "object" && value !== null)
+       ) {
+         cleaned[key] = value;
+       }
+     }
+     return cleaned;
+   };
+
+   try {
+     const cleanedData = getCleanUpdateData(bulkUpdateData);
+
+     const response = await fetch(`${process.env.REACT_APP_API_URL}/api/tasks/bulk`, {
+       method: "PATCH",
+       headers: {
+         "Content-Type": "application/json",
+         Authorization: `Bearer ${localStorage.getItem("token")}`,
+       },
+       body: JSON.stringify({
+         taskIds: Array.from(selectedTaskIds),
+         updateData: cleanedData,
+       }),
+     });
+
+     if (!response.ok) {
+       alert("Bulk update failed");
+       return;
+     }
+
+     await loadTasks(tasksPage);
+     alert("Bulk update successful");
+     setSelectedTaskIds(new Set());
+     setBulkModalOpen(false);
+   } catch (err) {
+     console.error("Bulk update failed", err);
+   } finally {
+     setBulkLoading(false);
+   }
+ };
+
 
   const getUsernameById = (id) => {
     const user = users.find((u) => u._id === id);
@@ -411,21 +462,9 @@ const AdminDashboard = () => {
             borderRadius: "4px",
             border: "1px solid #ccc",
           }}
-          onClick={() => handleBulkTaskStatus("active")}
+          onClick={() => setBulkModalOpen(true)}
         >
-          ✅ Completed
-        </button>
-        <button
-          style={{
-            padding: "4px 8px",
-            fontSize: "0.8rem",
-            width: "130px",
-            borderRadius: "4px",
-            border: "1px solid #ccc",
-          }}
-          onClick={() => handleBulkTaskStatus("pending")}
-        >
-          ❌ Pending
+          Bulk Update
         </button>
         <input
           type="text"
@@ -648,6 +687,127 @@ const AdminDashboard = () => {
           )}
         </Button>
       </Stack>
+      {bulkModalOpen && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100vw",
+            height: "100vh",
+            backgroundColor: "rgba(0, 0, 0, 0.4)",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            zIndex: 999,
+          }}
+        >
+          <div
+            style={{
+              backgroundColor: "white",
+              padding: "20px",
+              borderRadius: "8px",
+              width: "400px",
+            }}
+          >
+            <h3>Bulk Update Tasks</h3>
+
+            <input
+              placeholder="Title"
+              style={{ width: "100%", marginBottom: "10px" }}
+              value={bulkUpdateData.title}
+              onChange={(e) =>
+                setBulkUpdateData((prev) => ({
+                  ...prev,
+                  title: e.target.value,
+                }))
+              }
+            />
+
+            <textarea
+              placeholder="Description"
+              style={{ width: "100%", marginBottom: "10px" }}
+              rows={3}
+              value={bulkUpdateData.description}
+              onChange={(e) =>
+                setBulkUpdateData((prev) => ({
+                  ...prev,
+                  description: e.target.value,
+                }))
+              }
+            />
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={bulkUpdateData.completed}
+                  onChange={(e) =>
+                    setBulkUpdateData((prev) => ({
+                      ...prev,
+                      completed: e.target.checked,
+                    }))
+                  }
+                />
+              }
+              label="Completed"
+            />
+
+            <input
+              type="date"
+              style={{ width: "100%", marginBottom: "10px" }}
+              value={bulkUpdateData.dueDate}
+              onChange={(e) =>
+                setBulkUpdateData((prev) => ({
+                  ...prev,
+                  dueDate: e.target.value,
+                }))
+              }
+            />
+
+            {/* Conditionally show assignedTo if admin */}
+            {user?.role === "admin" && (
+              <div style={{ marginBottom: "10px" }}>
+                <label style={{ display: "block", marginBottom: "5px" }}>
+                  Assign To:
+                </label>
+                <select
+                  value={bulkUpdateData.assignedTo || ""}
+                  onChange={(e) =>
+                    setBulkUpdateData((prev) => ({
+                      ...prev,
+                      assignedTo: e.target.value,
+                    }))
+                  }
+                  style={{
+                    width: "100%",
+                    padding: "8px",
+                    border: "1px solid #ccc",
+                    borderRadius: "4px",
+                  }}
+                >
+                  <option value="">Select a user</option>
+                  {users.map((user) => (
+                    <option key={user._id} value={user._id}>
+                      {user.username}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            <div style={{ textAlign: "right" }}>
+              <button
+                onClick={() => setBulkModalOpen(false)}
+                style={{ marginRight: "10px" }}
+              >
+                Cancel
+              </button>
+              <button onClick={handleBulkUpdate}>
+                {bulkLoading ? "Updating..." : "Confirm"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </Container>
   );
 }
