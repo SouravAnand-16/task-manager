@@ -93,6 +93,20 @@ exports.updateTask = async (req, res) => {
 
 exports.bulkUpdateTasks = async (req, res) => {
   const { taskIds, updateData } = req.body;
-  await Task.updateMany({ _id: { $in: taskIds } }, updateData);
-  res.json({ message: 'Tasks updated' });
+
+  // Basic validation
+  if (!Array.isArray(taskIds) || taskIds.length === 0) {
+    return res.status(400).json({ message: 'taskIds must be a non-empty array' });
+  }
+  if (!updateData || typeof updateData !== 'object') {
+    return res.status(400).json({ message: 'updateData must be a valid object' });
+  }
+
+  try {
+    await Task.updateMany({ _id: { $in: taskIds } }, { $set: updateData });
+    res.json({ message: 'Tasks updated' });
+  } catch (error) {
+    console.error('Error in bulkUpdateTasks:', error);
+    res.status(500).json({ message: 'Server error during bulk update' });
+  }
 };

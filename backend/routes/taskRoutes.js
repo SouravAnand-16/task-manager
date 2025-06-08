@@ -5,7 +5,7 @@ const auth = require('../middleware/authMiddleware');
 
 router.get('/', auth, getTasks);
 router.post('/', auth, createTask);
-router.patch('/:taskId', auth, updateTask);
 router.patch('/bulk', auth, bulkUpdateTasks);
+router.patch('/:taskId', auth, updateTask);
 
 module.exports = router;
