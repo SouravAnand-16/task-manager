@@ -1,26 +1,35 @@
 import { useEffect, useState } from 'react';
 import {
-Container,
-Typography,
-Table,
-TableBody,
-TableCell,
-TableContainer,
-TableHead,
-TableRow,
-Paper,
-Button,
-Checkbox,
-Stack,
-Divider,
-Box
-} from '@mui/material';
+  Container,
+  Typography,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  Button,
+  Checkbox,
+  Stack,
+  Divider,
+  Box,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  FormControlLabel,
+} from "@mui/material";
+import CircularProgress from '@mui/material/CircularProgress';
 import {
   fetchUsers,
   toggleUserStatus,
   fetchTasks,
   bulkUpdateTaskStatus,
   createTask,
+  updateTask,
+  deleteTask,
 } from '../../../src/utils/util';
 
 const PAGE_SIZE = 5;
@@ -44,12 +53,74 @@ const AdminDashboard = () => {
     assignedTo: "",
   });
 
+  //EDIT TASKS
+  const [editOpen, setEditOpen] = useState(false);
+  const [editTask, setEditTask] = useState(null);
+  const [loadingIds, setLoadingIds] = useState(new Set());
+
+  const handleOpenEdit = (task) => {
+    setEditTask(task);
+    setEditOpen(true);
+  };
+
+  const handleCloseEdit = () => {
+    setEditOpen(false);
+    setEditTask(null);
+  };
+  
+  const handleEditInputChange = (e) => {
+    const { name, value } = e.target;
+    setEditTask(prev => ({ ...prev, [name]: value }));
+  };
+  
+  const handleUpdateTask = async () => {
+    if (!editTask) return;
+    setLoadingIds(prev => new Set(prev).add(editTask._id));
+    try {
+      await updateTask(editTask._id, editTask); 
+      alert("Task updated");
+      loadTasks(tasksPage);
+      handleCloseEdit();
+    } catch (err) {
+      console.error("Update failed", err);
+    } finally {
+      setLoadingIds(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(editTask._id);
+        return newSet;
+      });
+    }
+  };
+  
+  const handleDeleteTask = async (taskId) => {
+    if (!window.confirm("Are you sure to delete this task?")) return;
+    setLoadingIds(prev => new Set(prev).add(taskId));
+    try {
+      await deleteTask(taskId); 
+      alert("Task deleted");
+      loadTasks(tasksPage);
+      setSelectedTaskIds(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(taskId);
+        return newSet;
+      });
+    } catch (err) {
+      console.error("Delete failed", err);
+    } finally {
+      setLoadingIds(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(taskId);
+        return newSet;
+      });
+    }
+  };
+
   const [loading, setLoading] = useState(false);
+  const [loadingButton, setLoadingButton] = useState(null); 
   // Filters
   const [assignedToFilter, setAssignedToFilter] = useState("");
   const [dueDateFilter, setDueDateFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
-
 
   // Selected tasks IDs (across pages)
   const [selectedTaskIds, setSelectedTaskIds] = useState(new Set());
@@ -82,16 +153,15 @@ const AdminDashboard = () => {
     }
   };
 
-
   // Load Users
-   const loadUsers = async (page = 1) => {
+  const loadUsers = async (page = 1) => {
     try {
       const data = await fetchUsers(page, PAGE_SIZE);
       setUsers(data.users);
       setUsersTotalPages(data.totalPages);
       setUsersPage(page);
     } catch (err) {
-      console.error('Error loading users:', err);
+      console.error("Error loading users:", err);
     }
   };
 
@@ -100,10 +170,10 @@ const AdminDashboard = () => {
     try {
       const data = await fetchTasks(page, PAGE_SIZE);
       setTasks(data.tasks);
-     setTasksTotalPages(Math.ceil(data.total / PAGE_SIZE));
+      setTasksTotalPages(Math.ceil(data.total / PAGE_SIZE));
       setTasksPage(page);
     } catch (err) {
-      console.error('Error loading tasks:', err);
+      console.error("Error loading tasks:", err);
     }
   };
 
@@ -113,7 +183,7 @@ const AdminDashboard = () => {
       await toggleUserStatus(userId, currentStatus);
       loadUsers(usersPage);
     } catch (err) {
-      console.error('Failed to update user status:', err);
+      console.error("Failed to update user status:", err);
     }
   };
 
@@ -130,34 +200,34 @@ const AdminDashboard = () => {
 
   // Toggle select all tasks on current page
   const toggleSelectAll = () => {
-    const allSelected = tasks.every(task => selectedTaskIds.has(task._id));
+    const allSelected = tasks.every((task) => selectedTaskIds.has(task._id));
     const newSet = new Set(selectedTaskIds);
     if (allSelected) {
       // Unselect all on page
-      tasks.forEach(task => newSet.delete(task._id));
+      tasks.forEach((task) => newSet.delete(task._id));
     } else {
       // Select all on page
-      tasks.forEach(task => newSet.add(task._id));
+      tasks.forEach((task) => newSet.add(task._id));
     }
     setSelectedTaskIds(newSet);
   };
 
   // Bulk update status
-   const handleBulkTaskStatus = async (newStatus) => {
-    if (selectedTaskIds.size === 0) return alert('Select tasks to update');
+  const handleBulkTaskStatus = async (newStatus) => {
+    if (selectedTaskIds.size === 0) return alert("Select tasks to update");
     try {
       await bulkUpdateTaskStatus(Array.from(selectedTaskIds), newStatus);
-      alert('Tasks updated');
+      alert("Tasks updated");
       loadTasks(tasksPage);
       setSelectedTaskIds(new Set());
     } catch (err) {
-      console.error('Error updating tasks:', err);
+      console.error("Error updating tasks:", err);
     }
   };
 
   const getUsernameById = (id) => {
-    const user = users.find(u => u._id === id);
-    return user ? user.username?.toUpperCase() : 'Unknown';
+    const user = users.find((u) => u._id === id);
+    return user ? user.username?.toUpperCase() : "Unknown";
   };
 
   const filteredTasks = tasks.filter((task) => {
@@ -177,14 +247,22 @@ const AdminDashboard = () => {
     return matchAssigned && matchStatus && matchDueDate;
   });
 
-
   useEffect(() => {
     loadUsers(usersPage);
     loadTasks(tasksPage);
   }, []);
 
   return (
-    <Container maxWidth="lg" sx={{ mt: 4 , display: 'flex', flexDirection: 'column', gap: 1, flexWrap: 'wrap'}}>
+    <Container
+      maxWidth="lg"
+      sx={{
+        mt: 4,
+        display: "flex",
+        flexDirection: "column",
+        gap: 1,
+        flexWrap: "wrap",
+      }}
+    >
       Admin Dashboard
       {/* Users Section */}
       <Typography variant="h5" gutterBottom>
@@ -199,14 +277,20 @@ const AdminDashboard = () => {
                 <TableRow>
                   <TableCell sx={{ fontWeight: "bold" }}>Username</TableCell>
                   <TableCell sx={{ fontWeight: "bold" }}>Role</TableCell>
-                  <TableCell sx={{ width: "60px", fontWeight:"bold" }}>Status</TableCell>
+                  <TableCell sx={{ width: "60px", fontWeight: "bold" }}>
+                    Status
+                  </TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 {users.map((user) => (
                   <TableRow key={user._id}>
-                    <TableCell sx={{fontStyle: "italic",color: "#888"}}>{user.username?.toUpperCase()}</TableCell>
-                    <TableCell sx={{fontStyle: "italic",color: "#888"}}>{user.role}</TableCell>
+                    <TableCell sx={{ fontStyle: "italic", color: "#888" }}>
+                      {user.username?.toUpperCase()}
+                    </TableCell>
+                    <TableCell sx={{ fontStyle: "italic", color: "#888" }}>
+                      {user.role}
+                    </TableCell>
                     <TableCell>
                       <Button
                         size="small"
@@ -366,81 +450,202 @@ const AdminDashboard = () => {
           <option value="pending">Pending</option>
         </select>
       </div>
-      <TableContainer component={Paper}>
-  <Table sx={{ borderCollapse: "collapse" }}>
-    <TableHead sx={{ backgroundColor: "#f0f0f0" }}>
-      <TableRow>
-        <TableCell padding="checkbox" sx={{ fontWeight: "bold" }}>
-          <Checkbox
-            checked={
-              tasks.length > 0 &&
-              tasks.every((task) => selectedTaskIds.has(task._id))
-            }
-            onChange={toggleSelectAll}
+      <Dialog open={editOpen} onClose={handleCloseEdit} fullWidth maxWidth="sm">
+        <DialogTitle>Edit Task</DialogTitle>
+        <DialogContent>
+          <TextField
+            margin="dense"
+            label="Title"
+            name="title"
+            fullWidth
+            value={editTask?.title || ""}
+            onChange={handleEditInputChange}
           />
-        </TableCell>
-        <TableCell sx={{ fontWeight: "bold" }}>Title</TableCell>
-        <TableCell sx={{ fontWeight: "bold" }}>Description</TableCell>
-        <TableCell sx={{ fontWeight: "bold" }}>Assigned To</TableCell>
-        <TableCell sx={{ fontWeight: "bold" }}>Status</TableCell>
-        <TableCell sx={{ fontWeight: "bold" }}>Due Date</TableCell>
-      </TableRow>
-    </TableHead>
-    <TableBody>
-      {filteredTasks.map((task) => (
-        <TableRow key={task._id}>
-          <TableCell padding="checkbox" sx={{ fontWeight: "bold" }}>
-            <Checkbox
-              checked={selectedTaskIds.has(task._id)}
-              onChange={() => toggleTaskSelection(task._id)}
-            />
-          </TableCell>
-          <TableCell
-            sx={{
-              fontWeight: 600,
-              color: "#555", 
-            }}
+          <TextField
+            margin="dense"
+            label="Description"
+            name="description"
+            fullWidth
+            multiline
+            rows={3}
+            value={editTask?.description || ""}
+            onChange={handleEditInputChange}
+          />
+          <TextField
+            margin="dense"
+            label="Due Date"
+            name="dueDate"
+            type="date"
+            fullWidth
+            InputLabelProps={{ shrink: true }}
+            value={editTask?.dueDate ? editTask.dueDate.split("T")[0] : ""}
+            onChange={handleEditInputChange}
+          />
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={editTask?.completed || false}
+                onChange={(e) =>
+                  setEditTask((prev) => ({
+                    ...prev,
+                    completed: e.target.checked,
+                  }))
+                }
+              />
+            }
+            label="Completed"
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseEdit}>Cancel</Button>
+          <Button
+            onClick={handleUpdateTask}
+            disabled={loadingIds.has(editTask?._id)}
           >
-            {task.title}
-          </TableCell>
-          <TableCell
-            sx={{
-              fontStyle: "italic",
-              color: "#888", 
-            }}
-          >
-            {task.description}
-          </TableCell>
-          <TableCell sx={{fontStyle: "italic",color: "#888"}}>{getUsernameById(task.assignedTo)}</TableCell>
-          <TableCell>{task.completed ? "✅" : "❌"}</TableCell>
-          <TableCell
-            sx={{
-              fontStyle: "italic",
-              color: "#e69500", 
-            }}
-          >
-            {task.dueDate
-              ? new Date(task.dueDate).toLocaleDateString()
-              : "N/A"}
-          </TableCell>
-        </TableRow>
-      ))}
-    </TableBody>
-  </Table>
-</TableContainer>
+            {loadingIds.has(editTask?._id) ? (
+              <CircularProgress size={20} />
+            ) : (
+              "Update"
+            )}
+          </Button>
+        </DialogActions>
+      </Dialog>
+      <TableContainer component={Paper}>
+        <Table sx={{ borderCollapse: "collapse" }}>
+          <TableHead sx={{ backgroundColor: "#f0f0f0" }}>
+            <TableRow>
+              <TableCell padding="checkbox" sx={{ fontWeight: "bold" }}>
+                <Checkbox
+                  checked={
+                    tasks.length > 0 &&
+                    tasks.every((task) => selectedTaskIds.has(task._id))
+                  }
+                  onChange={toggleSelectAll}
+                />
+              </TableCell>
+              <TableCell sx={{ fontWeight: "bold" }}>Title</TableCell>
+              <TableCell sx={{ fontWeight: "bold" }}>Description</TableCell>
+              <TableCell sx={{ fontWeight: "bold" }}>Assigned To</TableCell>
+              <TableCell sx={{ fontWeight: "bold" }}>Status</TableCell>
+              <TableCell sx={{ fontWeight: "bold" }}>Due Date</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {filteredTasks.map((task) => (
+              <TableRow key={task._id}>
+                <TableCell padding="checkbox" sx={{ fontWeight: "bold" }}>
+                  <Checkbox
+                    checked={selectedTaskIds.has(task._id)}
+                    onChange={() => toggleTaskSelection(task._id)}
+                  />
+                </TableCell>
+                <TableCell
+                  sx={{
+                    fontWeight: 600,
+                    color: "#555",
+                  }}
+                >
+                  {task.title}
+                </TableCell>
+                <TableCell
+                  sx={{
+                    fontStyle: "italic",
+                    color: "#888",
+                  }}
+                >
+                  {task.description}
+                </TableCell>
+                <TableCell sx={{ fontStyle: "italic", color: "#888" }}>
+                  {getUsernameById(task.assignedTo)}
+                </TableCell>
+                <TableCell>
+                  <span style={{ color: task.completed ? "green" : "red" }}>
+                    {task.completed ? "Completed" : "Pending"}
+                  </span>
+                </TableCell>
 
+                <TableCell
+                  sx={{
+                    fontStyle: "italic",
+                    color: "#e69500",
+                  }}
+                >
+                  {task.dueDate
+                    ? new Date(task.dueDate).toLocaleDateString()
+                    : "N/A"}
+                </TableCell>
+                <TableCell>
+                  <div style={{ display: "flex" }}>
+                    <button
+                      onClick={() => handleOpenEdit(task)}
+                      disabled={loadingIds.has(task._id)}
+                      style={{
+                        marginRight: "8px",
+                        border: "none",
+                        background: "transparent",
+                        cursor: "pointer",
+                      }}
+                    >
+                      {loadingIds.has(task._id) ? (
+                        <i className="fas fa-spinner fa-spin"></i>
+                      ) : (
+                        <i className="fas fa-edit"></i>
+                      )}
+                    </button>
+
+                    <button
+                      onClick={() => handleDeleteTask(task._id)}
+                      disabled={loadingIds.has(task._id)}
+                      style={{
+                        border: "none",
+                        background: "transparent",
+                        cursor: "pointer",
+                      }}
+                    >
+                      {loadingIds.has(task._id) ? (
+                        <i className="fas fa-spinner fa-spin"></i>
+                      ) : (
+                        <i className="fas fa-trash-alt"></i>
+                      )}
+                    </button>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
       <Stack direction="row" spacing={2} sx={{ mt: 2 }}>
         <Button
-          disabled={tasksPage <= 1}
-          onClick={() => loadTasks(tasksPage - 1)}
+          disabled={tasksPage <= 1 || loadingButton === "prev"}
+          onClick={() => {
+            setLoadingButton("prev");
+            loadTasks(tasksPage - 1).finally(() => setLoadingButton(null));
+          }}
         >
-          Previous
+          {loadingButton === "prev" ? (
+            <span>
+              <i className="fas fa-spinner fa-spin"></i> Loading...
+            </span>
+          ) : (
+            "Previous"
+          )}
         </Button>
+
         <Button
-          disabled={tasksPage >= tasksTotalPages}
-          onClick={() => loadTasks(tasksPage + 1)}
+          disabled={tasksPage >= tasksTotalPages || loadingButton === "next"}
+          onClick={() => {
+            setLoadingButton("next");
+            loadTasks(tasksPage + 1).finally(() => setLoadingButton(null));
+          }}
         >
-          Next
+          {loadingButton === "next" ? (
+            <span>
+              <i className="fas fa-spinner fa-spin"></i> Loading...
+            </span>
+          ) : (
+            "Next"
+          )}
         </Button>
       </Stack>
     </Container>

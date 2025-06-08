@@ -399,8 +399,11 @@ const handleDeleteTask = async (taskId) => {
                   {task.description}
                 </TableCell>
                 <TableCell>
-                  {task.completed ? "Completed" : "Pending"}
+                  <span style={{ color: task.completed ? "green" : "red" }}>
+                    {task.completed ? "Completed" : "Pending"}
+                  </span>
                 </TableCell>
+
                 <TableCell
                   sx={{
                     fontStyle: "italic",
@@ -416,7 +419,12 @@ const handleDeleteTask = async (taskId) => {
                     <button
                       onClick={() => handleOpenEdit(task)}
                       disabled={loadingIds.has(task._id)}
-                      style={{ marginRight: "8px", border: "none", background: "transparent", cursor: "pointer" }}
+                      style={{
+                        marginRight: "8px",
+                        border: "none",
+                        background: "transparent",
+                        cursor: "pointer",
+                      }}
                     >
                       {loadingIds.has(task._id) ? (
                         <i className="fas fa-spinner fa-spin"></i>
@@ -428,7 +436,11 @@ const handleDeleteTask = async (taskId) => {
                     <button
                       onClick={() => handleDeleteTask(task._id)}
                       disabled={loadingIds.has(task._id)}
-                      style={{ border: "none", background: "transparent", cursor: "pointer" }}  
+                      style={{
+                        border: "none",
+                        background: "transparent",
+                        cursor: "pointer",
+                      }}
                     >
                       {loadingIds.has(task._id) ? (
                         <i className="fas fa-spinner fa-spin"></i>
