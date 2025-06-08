@@ -20,6 +20,7 @@ import {
   toggleUserStatus,
   fetchTasks,
   bulkUpdateTaskStatus,
+  createTask,
 } from '../../../src/utils/util';
 
 const PAGE_SIZE = 5;
@@ -43,7 +44,7 @@ const AdminDashboard = () => {
     assignedTo: "",
   });
 
-
+  const [loading, setLoading] = useState(false);
   // Filters
   const [assignedToFilter, setAssignedToFilter] = useState("");
   const [dueDateFilter, setDueDateFilter] = useState("");
@@ -69,12 +70,10 @@ const AdminDashboard = () => {
     }
 
     try {
-      const res = await fetch("/api/tasks", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newTask),
-      });
-      if (!res.ok) throw new Error("Failed to create task");
+      const data = await createTask(newTask);
+      if (!data || !data._id) {
+        throw new Error("Task creation failed");
+      }
       alert("Task created!");
       setNewTask({ title: "", description: "", dueDate: "", assignedTo: "" });
       loadTasks(tasksPage);
@@ -185,7 +184,7 @@ const AdminDashboard = () => {
   }, []);
 
   return (
-    <Container maxWidth="lg" sx={{ mt: 4 }}>
+    <Container maxWidth="lg" sx={{ mt: 4 , display: 'flex', flexDirection: 'column', gap: 1, flexWrap: 'wrap'}}>
       Admin Dashboard
       {/* Users Section */}
       <Typography variant="h5" gutterBottom>
@@ -194,7 +193,7 @@ const AdminDashboard = () => {
       <Stack direction="row" spacing={4} sx={{ mb: 3 }} flexWrap="wrap">
         {/* Users Table */}
         <Box>
-          <TableContainer component={Paper} sx={{ flex: 1, minWidth: "300px" }}>
+          <TableContainer component={Paper} sx={{ flex: 1 }}>
             <Table sx={{ borderCollapse: "collapse" }}>
               <TableHead sx={{ backgroundColor: "#f0f0f0" }}>
                 <TableRow>
@@ -273,30 +272,30 @@ const AdminDashboard = () => {
           />
           <div style={{ display: "flex", flexDirection: "row", gap: "8px" }}>
             <input
-            type="date"
-            name="dueDate"
-            value={newTask.dueDate}
-            onChange={handleTaskInputChange}
-            style={{ width: "100%", padding: "4px", marginBottom: "8px" }}
-          />
-          {/* Only show assignedTo dropdown if admin */}
-          {users.some((u) => u.role === "user") && (
-            <select
-              name="assignedTo"
-              value={newTask.assignedTo}
+              type="date"
+              name="dueDate"
+              value={newTask.dueDate}
               onChange={handleTaskInputChange}
               style={{ width: "100%", padding: "4px", marginBottom: "8px" }}
-            >
-              <option value="">Assign to User</option>
-              {users
-                .filter((u) => u.role === "user")
-                .map((user) => (
-                  <option key={user._id} value={user._id}>
-                    {user.username}
-                  </option>
-                ))}
-            </select>
-          )}
+            />
+            {/* Only show assignedTo dropdown if admin */}
+            {users.some((u) => u.role === "user") && (
+              <select
+                name="assignedTo"
+                value={newTask.assignedTo}
+                onChange={handleTaskInputChange}
+                style={{ width: "100%", padding: "4px", marginBottom: "8px" }}
+              >
+                <option value="">Assign to User</option>
+                {users
+                  .filter((u) => u.role === "user")
+                  .map((user) => (
+                    <option key={user._id} value={user._id}>
+                      {user.username}
+                    </option>
+                  ))}
+              </select>
+            )}
           </div>
           <Button variant="contained" size="small" onClick={handleCreateTask}>
             Create Task
@@ -314,19 +313,32 @@ const AdminDashboard = () => {
       <div
         style={{
           display: "flex",
-          gap: "8px",
+          flexWrap: "wrap",
+          gap: "20px",
           alignItems: "center",
           marginBottom: "0.5rem",
         }}
       >
         <button
-          style={{ padding: "4px 8px", fontSize: "0.8rem" }}
-          onClick={() => handleBulkTaskStatus("completed")}
+          style={{
+            padding: "4px 8px",
+            fontSize: "0.8rem",
+            width: "130px",
+            borderRadius: "4px",
+            border: "1px solid #ccc",
+          }}
+          onClick={() => handleBulkTaskStatus("active")}
         >
           ✅ Completed
         </button>
         <button
-          style={{ padding: "4px 8px", fontSize: "0.8rem" }}
+          style={{
+            padding: "4px 8px",
+            fontSize: "0.8rem",
+            width: "130px",
+            borderRadius: "4px",
+            border: "1px solid #ccc",
+          }}
           onClick={() => handleBulkTaskStatus("pending")}
         >
           🕓 Pending
@@ -336,18 +348,18 @@ const AdminDashboard = () => {
           placeholder="Filter by User"
           value={assignedToFilter}
           onChange={(e) => setAssignedToFilter(e.target.value)}
-          style={{ padding: "4px", fontSize: "0.8rem", width: "130px" }}
+          style={{ padding: "8px", fontSize: "0.8rem", width: "130px" }}
         />
         <input
           type="date"
           value={dueDateFilter}
           onChange={(e) => setDueDateFilter(e.target.value)}
-          style={{ padding: "4px", fontSize: "0.8rem" }}
+          style={{ padding: "8px", fontSize: "0.8rem", width: "130px" }}
         />
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          style={{ padding: "4px", fontSize: "0.8rem", width: "130px" }}
+          style={{ padding: "8px", fontSize: "0.8rem", width: "130px" }}
         >
           <option value="">All Status</option>
           <option value="completed">Completed</option>
@@ -414,5 +426,7 @@ const AdminDashboard = () => {
     </Container>
   );
 }
+
+// const styles = {};
 
 export default AdminDashboard;

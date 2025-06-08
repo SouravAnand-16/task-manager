@@ -9,9 +9,8 @@ import PasswordInput from './PasswordInput';
 const Login = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [rememberMe, setRememberMe] = useState(false);
   const [loading, setLoading] = useState(false);
-   const [errors, setErrors] = useState({ username: '', password: '' });
+  const [errors, setErrors] = useState({ username: '', password: '' });
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -21,14 +20,11 @@ const Login = () => {
     setLoading(true);
     try {
       const { token, user } = await loginUser(username, password);
-
-      if (rememberMe) {
-        localStorage.setItem("token", token);
-        localStorage.setItem("user", JSON.stringify(user));
-      } else {
-        sessionStorage.setItem("token", token);
-        sessionStorage.setItem("user", JSON.stringify(user));
+      if (!token || !user) {
+        throw new Error("Login failed");  
       }
+      localStorage.setItem("token", token);
+      localStorage.setItem("user", JSON.stringify(user));
 
       dispatch(setUser({ user, token }));
       navigate(user.role === "admin" ? "/admin" : "/user");

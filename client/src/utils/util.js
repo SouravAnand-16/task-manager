@@ -22,6 +22,16 @@ export const loginUser = async (username, password) => {
   return res.data;
 };
 
+// ========== REGISTER ==========
+
+export const registerUser = async (username, password) => {
+  const res = await axios.post(`${process.env.REACT_APP_API_URL}/api/auth/register`, {
+    username,
+    password,
+  });
+  return res.data;
+};
+
 // ========== USERS ==========
 export const fetchUsers = async (page, limit) => {
   const res = await API.get(`/api/users?page=${page}&limit=${limit}`);
@@ -37,6 +47,11 @@ export const toggleUserStatus = async (userId, currentStatus) => {
 // ========== TASKS ==========
 export const fetchTasks = async (page, limit) => {
   const res = await API.get(`/api/tasks?page=${page}&limit=${limit}`);
+  return res.data;
+};
+
+export const createTask = async (taskData) => {
+  const res = await API.post(`/api/tasks`, taskData);
   return res.data;
 };
 

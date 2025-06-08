@@ -37,29 +37,66 @@ const Navbar = () => {
 
   return (
     <>
-      <AppBar position="static" sx={{ backgroundColor: '##9575cd'}}>
-        <Toolbar sx={{ display: 'flex', justifyContent: 'space-between' }}>
-          <Typography variant="h6" component={Link} to="/" sx={{ textDecoration: 'none', color: '#fff' }}>
+      <AppBar position="static" sx={{ backgroundColor: "##9575cd" }}>
+        <Toolbar
+          sx={{
+            display: "flex",
+            flexDirection: { xs: "column", sm: "row" },
+            alignItems: { xs: "flex-start", sm: "center" },
+            justifyContent: "space-between",
+            gap: { xs: 1, sm: 0 },
+            px: 2,
+            py: { xs: 1, sm: 0 },
+          }}
+        >
+          <Typography
+            variant="h6"
+            component={Link}
+            to="/"
+            sx={{ textDecoration: "none", color: "#fff", mb: { xs: 1, sm: 0 } }}
+          >
             Task Manager
           </Typography>
 
           {!user ? (
-            <div>
-              <Button color="inherit" component={Link} to="/login">Login</Button>
-              <Button color="inherit" component={Link} to="/register">Register</Button>
+            <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+              <Button color="inherit" component={Link} to="/login">
+                Login
+              </Button>
+              <Button color="inherit" component={Link} to="/register">
+                Register
+              </Button>
             </div>
           ) : (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <Typography>Welcome, {user.username}</Typography>
-              {user.role === 'admin' ? (
-                <Button color="inherit" component={Link} to="/admin">Admin Panel</Button>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "10px",
+                flexWrap: "wrap",
+              }}
+            >
+              <Typography>Welcome, {user.username?.toUpperCase()}</Typography>
+              {user.role === "admin" ? (
+                <Button color="inherit" component={Link} to="/admin">
+                  Admin Panel
+                </Button>
               ) : (
-                <Button color="inherit" component={Link} to="/user">User Panel</Button>
+                <Button color="inherit" component={Link} to="/user">
+                  User Panel
+                </Button>
               )}
-              <Avatar onClick={handleMenuOpen} sx={{ bgcolor: 'secondary.main', cursor: 'pointer' }}>
+              <Avatar
+                onClick={handleMenuOpen}
+                sx={{ bgcolor: "secondary.main", cursor: "pointer" }}
+              >
                 {user.username[0]?.toUpperCase()}
               </Avatar>
-              <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose}>
+              <Menu
+                anchorEl={anchorEl}
+                open={Boolean(anchorEl)}
+                onClose={handleMenuClose}
+              >
                 <MenuItem onClick={handleEditOpen}>Edit Profile</MenuItem>
                 <MenuItem onClick={handleLogout}>Logout</MenuItem>
               </Menu>
@@ -84,7 +121,9 @@ const Navbar = () => {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setEditOpen(false)}>Cancel</Button>
-          <Button onClick={handleEditSave} variant="contained">Save</Button>
+          <Button onClick={handleEditSave} variant="contained">
+            Save
+          </Button>
         </DialogActions>
       </Dialog>
     </>
