@@ -19,11 +19,16 @@ import {
   DialogContent,
   DialogActions,
   TextField,
+  FormControlLabel,
 } from "@mui/material";
+import CircularProgress from '@mui/material/CircularProgress';
+
 import {
   fetchTasks,
   bulkUpdateTaskStatus,
   createTask,
+  updateTask,
+  deleteTask,
 } from "../../../src/utils/util";
 
 const PAGE_SIZE = 5;
@@ -42,6 +47,69 @@ const UserDashboard = () => {
     dueDate: "",
   });
 
+  //Edit Task
+  const [editOpen, setEditOpen] = useState(false);
+  const [editTask, setEditTask] = useState(null);
+  const [loadingIds, setLoadingIds] = useState(new Set()); 
+   
+  const handleOpenEdit = (task) => {
+  setEditTask(task);
+  setEditOpen(true);
+};
+
+const handleCloseEdit = () => {
+  setEditOpen(false);
+  setEditTask(null);
+};
+
+const handleEditInputChange = (e) => {
+  const { name, value } = e.target;
+  setEditTask(prev => ({ ...prev, [name]: value }));
+};
+
+const handleUpdateTask = async () => {
+  if (!editTask) return;
+  setLoadingIds(prev => new Set(prev).add(editTask._id));
+  try {
+    await updateTask(editTask._id, editTask); 
+    alert("Task updated");
+    loadTasks(tasksPage);
+    handleCloseEdit();
+  } catch (err) {
+    console.error("Update failed", err);
+  } finally {
+    setLoadingIds(prev => {
+      const newSet = new Set(prev);
+      newSet.delete(editTask._id);
+      return newSet;
+    });
+  }
+};
+
+const handleDeleteTask = async (taskId) => {
+  if (!window.confirm("Are you sure to delete this task?")) return;
+  setLoadingIds(prev => new Set(prev).add(taskId));
+  try {
+    await deleteTask(taskId); 
+    alert("Task deleted");
+    loadTasks(tasksPage);
+    setSelectedTaskIds(prev => {
+      const newSet = new Set(prev);
+      newSet.delete(taskId);
+      return newSet;
+    });
+  } catch (err) {
+    console.error("Delete failed", err);
+  } finally {
+    setLoadingIds(prev => {
+      const newSet = new Set(prev);
+      newSet.delete(taskId);
+      return newSet;
+    });
+  }
+};
+
+
   const [loading, setLoading] = useState(false);
   const [loadingButton, setLoadingButton] = useState(null); 
   // Filters
@@ -50,6 +118,7 @@ const UserDashboard = () => {
 
   // Selected tasks IDs (across pages)
   const [selectedTaskIds, setSelectedTaskIds] = useState(new Set());
+
 
   const closeModal = () => {
     setNewTask({ title: "", description: "", dueDate: "" });
@@ -224,6 +293,66 @@ const UserDashboard = () => {
           + Create Task
         </Button>
       </Box>
+      <Dialog open={editOpen} onClose={handleCloseEdit} fullWidth maxWidth="sm">
+        <DialogTitle>Edit Task</DialogTitle>
+        <DialogContent>
+          <TextField
+            margin="dense"
+            label="Title"
+            name="title"
+            fullWidth
+            value={editTask?.title || ""}
+            onChange={handleEditInputChange}
+          />
+          <TextField
+            margin="dense"
+            label="Description"
+            name="description"
+            fullWidth
+            multiline
+            rows={3}
+            value={editTask?.description || ""}
+            onChange={handleEditInputChange}
+          />
+          <TextField
+            margin="dense"
+            label="Due Date"
+            name="dueDate"
+            type="date"
+            fullWidth
+            InputLabelProps={{ shrink: true }}
+            value={editTask?.dueDate ? editTask.dueDate.split("T")[0] : ""}
+            onChange={handleEditInputChange}
+          />
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={editTask?.completed || false}
+                onChange={(e) =>
+                  setEditTask((prev) => ({
+                    ...prev,
+                    completed: e.target.checked,
+                  }))
+                }
+              />
+            }
+            label="Completed"
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseEdit}>Cancel</Button>
+          <Button
+            onClick={handleUpdateTask}
+            disabled={loadingIds.has(editTask?._id)}
+          >
+            {loadingIds.has(editTask?._id) ? (
+              <CircularProgress size={20} />
+            ) : (
+              "Update"
+            )}
+          </Button>
+        </DialogActions>
+      </Dialog>
       <TableContainer component={Paper}>
         <Table sx={{ borderCollapse: "collapse" }}>
           <TableHead sx={{ backgroundColor: "#f0f0f0" }}>
@@ -241,6 +370,7 @@ const UserDashboard = () => {
               <TableCell sx={{ fontWeight: "bold" }}>Description</TableCell>
               <TableCell sx={{ fontWeight: "bold" }}>Status</TableCell>
               <TableCell sx={{ fontWeight: "bold" }}>Due Date</TableCell>
+              <TableCell></TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -280,6 +410,33 @@ const UserDashboard = () => {
                   {task.dueDate
                     ? new Date(task.dueDate).toLocaleDateString()
                     : "N/A"}
+                </TableCell>
+                <TableCell>
+                  <div style={{ display: "flex" }}>
+                    <button
+                      onClick={() => handleOpenEdit(task)}
+                      disabled={loadingIds.has(task._id)}
+                      style={{ marginRight: "8px", border: "none", background: "transparent", cursor: "pointer" }}
+                    >
+                      {loadingIds.has(task._id) ? (
+                        <i className="fas fa-spinner fa-spin"></i>
+                      ) : (
+                        <i className="fas fa-edit"></i>
+                      )}
+                    </button>
+
+                    <button
+                      onClick={() => handleDeleteTask(task._id)}
+                      disabled={loadingIds.has(task._id)}
+                      style={{ border: "none", background: "transparent", cursor: "pointer" }}  
+                    >
+                      {loadingIds.has(task._id) ? (
+                        <i className="fas fa-spinner fa-spin"></i>
+                      ) : (
+                        <i className="fas fa-trash-alt"></i>
+                      )}
+                    </button>
+                  </div>
                 </TableCell>
               </TableRow>
             ))}

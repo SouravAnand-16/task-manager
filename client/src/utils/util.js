@@ -55,6 +55,16 @@ export const createTask = async (taskData) => {
   return res.data;
 };
 
+export const updateTask = async (taskId, taskData) => {
+  const res = await API.patch(`/api/tasks/${taskId}`, taskData);
+  return res.data;
+};
+
+export const deleteTask = async (taskId) => {
+  const res = await API.delete(`/api/tasks/${taskId}`); 
+  return res.data;
+}
+
 export const bulkUpdateTaskStatus = async (taskIds, newStatus) => {
   const res = await API.put(`/api/admin/tasks/bulk-update-status`, {
     taskIds,
