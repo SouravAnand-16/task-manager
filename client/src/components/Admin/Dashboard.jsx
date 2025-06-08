@@ -100,7 +100,7 @@ const AdminDashboard = () => {
     try {
       const data = await fetchTasks(page, PAGE_SIZE);
       setTasks(data.tasks);
-      setTasksTotalPages(data.totalPages);
+     setTasksTotalPages(Math.ceil(data.total / PAGE_SIZE));
       setTasksPage(page);
     } catch (err) {
       console.error('Error loading tasks:', err);
