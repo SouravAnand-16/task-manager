@@ -33,7 +33,7 @@ exports.login = async (req, res) => {
     }
     const token = generateToken(user);
     const { password, ...userWithoutPassword } = user.toObject();
-    res.json({ token, user });
+    res.json({ token, user: userWithoutPassword });
   } catch (err) {
     res.status(500).json({ message: 'Login failed', error: err.message });
   }
