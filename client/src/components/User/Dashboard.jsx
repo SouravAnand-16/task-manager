@@ -323,7 +323,7 @@ const UserDashboard = () => {
           display: "flex",
           justifyContent: "flex-end",
           mb: 1,
-          maxWidth: "30%",
+          maxWidth: "fit-content",
         }}
       >
         <Button variant="contained" onClick={() => setOpenDialog(true)}>

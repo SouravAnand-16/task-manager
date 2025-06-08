@@ -130,6 +130,7 @@ const AdminDashboard = () => {
 
   const [loading, setLoading] = useState(false);
   const [loadingButton, setLoadingButton] = useState(null);
+  const [loadUserList, setLoadUserList] = useState(null);
   // Filters
   const [assignedToFilter, setAssignedToFilter] = useState("");
   const [dueDateFilter, setDueDateFilter] = useState("");
@@ -171,8 +172,12 @@ const AdminDashboard = () => {
     try {
       const data = await fetchUsers(page, PAGE_SIZE);
       setUsers(data.users);
-      setUsersTotalPages(data.totalPages);
-      setUsersPage(page);
+      setUsersTotalPages(data.total ? Math.ceil(data.total / PAGE_SIZE) : 1);
+      if (data.page) {
+        setUsersPage(data.page);
+      } else {
+        setUsersPage(page);
+      }
     } catch (err) {
       console.error("Error loading users:", err);
     }
@@ -319,9 +324,16 @@ const AdminDashboard = () => {
       <Typography variant="h5" gutterBottom>
         Users (Page {usersPage} of {usersTotalPages})
       </Typography>
-      <Stack direction="row" spacing={4} sx={{ mb: 3 }} flexWrap="wrap">
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "row",
+          flexWrap: "wrap",
+          gap: "30px",
+        }}
+      >
         {/* Users Table */}
-        <Box>
+        <Box sx={{ flex: 2, minWidth: "300px" }}>
           <TableContainer component={Paper} sx={{ flex: 1 }}>
             <Table sx={{ borderCollapse: "collapse" }}>
               <TableHead sx={{ backgroundColor: "#f0f0f0" }}>
@@ -368,58 +380,107 @@ const AdminDashboard = () => {
           <Box sx={{ mt: 2 }}>
             <Stack direction="row" spacing={2}>
               <Button
-                size="small"
-                variant="outlined"
-                disabled={usersPage <= 1}
-                onClick={() => loadUsers(usersPage - 1)}
+                disabled={usersPage <= 1 || loadUserList === "prev"}
+                onClick={() => {
+                  setLoadUserList("prev");
+                  loadUsers(tasksPage - 1).finally(() => setLoadUserList(null));
+                }}
               >
-                Previous
+                {loadUserList === "prev" ? (
+                  <span>
+                    <i className="fas fa-spinner fa-spin"></i> Loading...
+                  </span>
+                ) : (
+                  "Previous"
+                )}
               </Button>
               <Button
-                size="small"
-                variant="outlined"
-                disabled={usersPage >= usersTotalPages}
-                onClick={() => loadUsers(usersPage + 1)}
+                disabled={
+                  usersPage >= usersTotalPages || loadUserList === "next"
+                }
+                onClick={() => {
+                  setLoadUserList("next");
+                  loadUsers(usersPage + 1).finally(() => setLoadUserList(null));
+                }}
               >
-                Next
+                {loadUserList === "next" ? (
+                  <span>
+                    <i className="fas fa-spinner fa-spin"></i> Loading...
+                  </span>
+                ) : (
+                  "Next"
+                )}
               </Button>
             </Stack>
           </Box>
         </Box>
-
         {/* Create Task Form */}
-        <Paper elevation={3} sx={{ flex: 1, p: 2, minWidth: "300px" }}>
-          <Typography variant="h6">Create Task</Typography>
+        <div
+          style={{
+            flex: 1,
+            padding: "16px",
+            width: "100%",
+            maxWidth: "350px",
+            boxSizing: "border-box",
+            border: "1px solid #ccc",
+          }}
+        >
+          <Typography variant="h6" gutterBottom>
+            Create Task
+          </Typography>
+
           <input
             type="text"
             name="title"
             placeholder="Title"
             value={newTask.title}
             onChange={handleTaskInputChange}
-            style={{ width: "100%", padding: "4px", marginBottom: "8px" }}
+            style={{
+              width: "100%",
+              padding: "8px",
+              marginBottom: "10px",
+              fontSize: "0.9rem",
+            }}
           />
+
           <textarea
             name="description"
             placeholder="Description"
             value={newTask.description}
             onChange={handleTaskInputChange}
-            style={{ width: "100%", padding: "4px", marginBottom: "8px" }}
+            style={{
+              width: "100%",
+              padding: "8px",
+              marginBottom: "10px",
+              fontSize: "0.9rem",
+            }}
           />
-          <div style={{ display: "flex", flexDirection: "row", gap: "8px" }}>
+
+          <div style={{ display: "flex", gap: "8px", flexDirection: "column" }}>
             <input
               type="date"
               name="dueDate"
               value={newTask.dueDate}
               onChange={handleTaskInputChange}
-              style={{ width: "100%", padding: "4px", marginBottom: "8px" }}
+              style={{
+                width: "100%",
+                padding: "8px",
+                marginBottom: "10px",
+                fontSize: "0.9rem",
+              }}
             />
-            {/* Only show assignedTo dropdown if admin */}
+
             {users.some((u) => u.role === "user") && (
               <select
                 name="assignedTo"
                 value={newTask.assignedTo}
                 onChange={handleTaskInputChange}
-                style={{ width: "100%", padding: "4px", marginBottom: "8px" }}
+                style={{
+                  width: "100%",
+                  padding: "8px",
+                  marginBottom: "10px",
+                  fontSize: "0.9rem",
+                }}
               >
                 <option value="">Assign to User</option>
                 {users
@@ -432,11 +493,18 @@ const AdminDashboard = () => {
               </select>
             )}
           </div>
-          <Button variant="contained" size="small" onClick={handleCreateTask}>
+
+          <Button
+            variant="contained"
+            size="small"
+            onClick={handleCreateTask}
+            fullWidth
+            sx={{ mt: 1 }}
+          >
             Create Task
           </Button>
-        </Paper>
-      </Stack>
+        </div>
+      </div>
       <Divider sx={{ my: 4 }} />
       {/* Tasks Section */}
       <Typography variant="h5" gutterBottom>
