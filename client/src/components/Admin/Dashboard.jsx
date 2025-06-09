@@ -468,6 +468,7 @@ const AdminDashboard = () => {
             maxWidth: "350px",
             boxSizing: "border-box",
             border: "1px solid #ccc",
+            borderRadius: "25px",
           }}
         >
           <Typography variant="h6" gutterBottom>
@@ -494,7 +495,7 @@ const AdminDashboard = () => {
             value={newTask.description}
             onChange={handleTaskInputChange}
             style={{
-              width: "100%",
+              width: "95%",
               padding: "8px",
               marginBottom: "10px",
               fontSize: "0.9rem",
@@ -538,13 +539,18 @@ const AdminDashboard = () => {
               </select>
             )}
           </div>
-
           <Button
             variant="contained"
             size="small"
             onClick={handleCreateTask}
             fullWidth
-            sx={{ mt: 1 }}
+            sx={{
+              backgroundColor: "#5c6bc0",
+              "&:hover": {
+                backgroundColor: "#3f51b5",
+                mt: 1,
+              },
+            }}
           >
             Create Task
           </Button>
@@ -558,7 +564,6 @@ const AdminDashboard = () => {
       <Typography variant="body1">
         Selected Tasks: {selectedTaskIds.size}
       </Typography>
-
       {/* // Task Table Functionality */}
       <Box display="flex" flexWrap="wrap" gap="6px" alignItems="center" mb={2}>
         <Button
@@ -680,8 +685,9 @@ const AdminDashboard = () => {
               </TableCell>
               <TableCell sx={{ fontWeight: "bold" }}>Title</TableCell>
               <TableCell sx={{ fontWeight: "bold" }}>Description</TableCell>
-              <TableCell sx={{ fontWeight: "bold" }}>Assigned To</TableCell>
               <TableCell sx={{ fontWeight: "bold" }}>Status</TableCell>
+              <TableCell sx={{ fontWeight: "bold" }}>Assigned To</TableCell>
+              {/* <TableCell sx={{ fontWeight: "bold" }}>Status</TableCell> */}
               <TableCell sx={{ fontWeight: "bold" }}>Due Date</TableCell>
               <TableCell sx={{ fontWeight: "bold" }}>Actions</TableCell>
             </TableRow>
@@ -713,24 +719,19 @@ const AdminDashboard = () => {
                     {task.description}
                   </TableCell>
 
-                  <TableCell sx={{ fontStyle: "italic", color: "#777" }}>
-                    {getUsernameById(task.assignedTo)}
-                  </TableCell>
-
                   <TableCell>
                     <span
                       style={{
                         fontWeight: "400",
-                        color: task.completed ? "green" : "red",
+                        color: task.completed ? "#4caf50" : "#f44336",
                       }}
-                      title={
-                        task.completed
-                          ? "This task is completed."
-                          : "Task is pending."
-                      }
                     >
                       {task.completed ? "Completed" : "Pending"}
                     </span>
+                  </TableCell>
+
+                  <TableCell sx={{ fontStyle: "italic", color: "#777" }}>
+                    {getUsernameById(task.assignedTo)}
                   </TableCell>
 
                   <TableCell>
@@ -740,14 +741,10 @@ const AdminDashboard = () => {
                           display: "flex",
                           alignItems: "center",
                           gap: "6px",
-                          color: isOverdue
-                            ? "red"
-                            : isDueSoon
-                            ? "#d9a800"
-                            : "green",
+                          color: "#5c6bc0",
                           fontWeight:
                             isOverdue || isDueSoon ? "bold" : "normal",
-                          fontStyle: "italic",
+                          fontStyle: isOverdue ? "italic" : "normal",
                         }}
                         title={
                           isOverdue
@@ -757,7 +754,15 @@ const AdminDashboard = () => {
                             : "On Track"
                         }
                       >
-                        <i className="fas fa-exclamation-triangle"></i>
+                        <i
+                          className={`fas ${
+                            isOverdue
+                              ? "fa-exclamation-circle"
+                              : isDueSoon
+                              ? "fa-clock"
+                              : "fa-check-circle"
+                          }`}
+                        ></i>
                         {dueDate.toLocaleDateString()}
                       </span>
                     ) : (

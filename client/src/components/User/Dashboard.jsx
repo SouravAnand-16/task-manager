@@ -318,7 +318,7 @@ const UserDashboard = () => {
           <Button
             variant="outlined"
             size="small"
-            sx={{ width:"fit-content" }}
+            sx={{ width: "fit-content" }}
             onClick={() => setBulkModalOpen(true)}
           >
             🔁 Bulk Update
@@ -348,7 +348,7 @@ const UserDashboard = () => {
           </FormControl>
         </Box>
       </Box>
-      
+
       <Box
         sx={{
           display: "flex",
@@ -357,7 +357,16 @@ const UserDashboard = () => {
           maxWidth: "fit-content",
         }}
       >
-        <Button variant="contained" onClick={() => setOpenDialog(true)}>
+        <Button
+          variant="contained"
+          onClick={() => setOpenDialog(true)}
+          sx={{
+            backgroundColor: "#5c6bc0",
+            "&:hover": {
+              backgroundColor: "#3f51b5", 
+            },
+          }}
+        >
           + Create Task
         </Button>
       </Box>
@@ -437,7 +446,6 @@ const UserDashboard = () => {
               <TableCell sx={{ fontWeight: "bold" }}>Title</TableCell>
               <TableCell sx={{ fontWeight: "bold" }}>Description</TableCell>
               <TableCell sx={{ fontWeight: "bold" }}>Status</TableCell>
-              <TableCell sx={{ fontWeight: "bold" }}>Priority</TableCell>
               <TableCell sx={{ fontWeight: "bold" }}>Due Date</TableCell>
               <TableCell sx={{ fontWeight: "bold" }}>Actions</TableCell>
             </TableRow>
@@ -486,40 +494,34 @@ const UserDashboard = () => {
                   </TableCell>
 
                   <TableCell>
-                    <span
-                      className={`priority-badge priority-${
-                        task.priority || "low"
-                      }`}
-                    >
-                      {task.priority || "low"}
-                    </span>
-                  </TableCell>
-
-                  <TableCell>
                     {dueDate ? (
                       <span
                         style={{
                           display: "flex",
                           alignItems: "center",
                           gap: "6px",
-                          color: isOverdue
-                            ? "red"
-                            : isDueSoon
-                            ? "#d9a800"
-                            : "green",
+                          color: "#5c6bc0",
                           fontWeight:
                             isOverdue || isDueSoon ? "bold" : "normal",
-                          fontStyle: "italic",
+                          fontStyle: isOverdue ? "italic" : "normal",
                         }}
                         title={
                           isOverdue
-                            ? "Overdue: Task should have been completed."
+                            ? "Overdue"
                             : isDueSoon
-                            ? "Due Soon: Task is nearing its due date."
-                            : "On Track: Task is not urgent yet."
+                            ? "Due Soon"
+                            : "On Track"
                         }
                       >
-                        <i className="fas fa-exclamation-triangle"></i>
+                        <i
+                          className={`fas ${
+                            isOverdue
+                              ? "fa-exclamation-circle"
+                              : isDueSoon
+                              ? "fa-clock"
+                              : "fa-check-circle"
+                          }`}
+                        ></i>
                         {dueDate.toLocaleDateString()}
                       </span>
                     ) : (
