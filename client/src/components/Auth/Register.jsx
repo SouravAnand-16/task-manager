@@ -8,7 +8,7 @@ const Register = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-   const [errors, setErrors] = useState({});
+  const [errors, setErrors] = useState({});
   const navigate = useNavigate();
 
   const handleRegister = async (e) => {
@@ -20,13 +20,13 @@ const Register = () => {
       alert('Registration successful!');
       navigate('/login');
     } catch (err) {
-      const message = err.response?.data?.message || "Registration failed";
-      if (message === "username not available") {
+      const message = err.response?.data?.message || 'Registration failed';
+      if (message === 'username not available') {
         setErrors({ message: message });
       } else {
         alert(message);
       }
-      console.error("Registration error:", err);
+      console.error('Registration error:', err);
     } finally {
       setLoading(false);
     }
@@ -34,56 +34,64 @@ const Register = () => {
 
   return (
     <div style={styles.container}>
-      <form onSubmit={handleRegister} style={styles.form}>
-        <h2 style={styles.title}>Register</h2>
-        <input
-          type="text"
-          placeholder="Username"
-          required
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          style={styles.input}
-        />
-        {errors.message && (  
-          <span style={{ color: 'red', fontSize: '12px' }}
-            role="alert"  
-            aria-live="assertive">
-            {errors.message}
-          </span>
-        )}
-         <PasswordInput
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          errors={errors}
-        />
-        <button type="submit" disabled={loading} style={styles.button}>
-          {loading ? (
-            <span>
-              <i className="fas fa-spinner fa-spin"></i> Registering...
+      <div style={styles.overlay}>
+        <form onSubmit={handleRegister} style={styles.form}>
+          <h2 style={styles.title}>Register</h2>
+          <input
+            type="text"
+            placeholder="Username"
+            required
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            style={styles.input}
+          />
+          {errors.message && (
+            <span
+              style={{ color: 'red', fontSize: '12px' }}
+              role="alert"
+              aria-live="assertive"
+            >
+              {errors.message}
             </span>
-          ) : (
-            "Register"
           )}
-        </button>
-      </form>
+          <PasswordInput
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            errors={errors}
+          />
+          <button type="submit" disabled={loading} style={styles.button}>
+            {loading ? (
+              <span>
+                <i className="fas fa-spinner fa-spin"></i> Registering...
+              </span>
+            ) : (
+              'Register'
+            )}
+          </button>
+        </form>
+      </div>
     </div>
   );
 };
 
 const styles = {
   container: {
-    height: '100vh',
+    minHeight: '100vh',
+    background: 'linear-gradient(135deg, #7b1fa2, #512da8)',
     display: 'flex',
-    alignItems: 'center',
     justifyContent: 'center',
-    background: '#f4f6f8',
+    alignItems: 'center',
+    padding: '20px',
+  },
+  overlay: {
+    width: '100%',
+    maxWidth: '400px',
+    background: 'rgba(255, 255, 255, 0.95)',
+    padding: '30px',
+    borderRadius: '16px',
+    boxShadow: '0 8px 24px rgba(0,0,0,0.2)',
   },
   form: {
-    padding: '30px',
-    width: '300px',
-    borderRadius: '12px',
-    background: '#fff',
-    boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
     display: 'flex',
     flexDirection: 'column',
     gap: '16px',
@@ -91,7 +99,9 @@ const styles = {
   title: {
     margin: 0,
     textAlign: 'center',
-    color: '#333',
+    color: '#512da8',
+    fontWeight: 'bold',
+    fontSize: '24px',
   },
   input: {
     padding: '10px 12px',
@@ -101,14 +111,16 @@ const styles = {
     outline: 'none',
   },
   button: {
-    padding: '10px 12px',
-    fontSize: '14px',
+    padding: '12px',
+    fontSize: '15px',
     borderRadius: '6px',
     border: 'none',
-    backgroundColor: '#1976d2',
+    background: 'linear-gradient(to right, #7b1fa2, #512da8)',
     color: '#fff',
     cursor: 'pointer',
-    transition: 'background 0.3s ease',
+    fontWeight: 'bold',
+    transition: 'all 0.3s ease',
+    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
   },
 };
 
