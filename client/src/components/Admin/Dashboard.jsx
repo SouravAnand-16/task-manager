@@ -356,7 +356,16 @@ const filteredUsers = users.filter((user) => {
     >
       Admin Dashboard
       {/* Users Section */}
-      <Typography variant="h5" gutterBottom>
+      <Typography
+        variant="h5"
+        gutterBottom
+        sx={{
+          fontWeight: "bold",
+          color: "#3f51b5",
+          display: "inline-block",
+          fontFamily: "'Segoe UI', Roboto, sans-serif",
+        }}
+      >
         Users (Page {usersPage} of {usersTotalPages})
       </Typography>
       {/* //Users Filter */}
@@ -367,8 +376,8 @@ const filteredUsers = users.filter((user) => {
         onChange={(e) => setFilterText(e.target.value)}
         placeholder="Filter by {role=user} or {username=rohit}"
         sx={{
-          minWidth:"300px",
-          maxWidth:"770px",
+          minWidth: "300px",
+          maxWidth: "770px",
           backgroundColor: "#f9f9f9",
           borderRadius: "8px",
           "& .MuiOutlinedInput-root": {
@@ -642,7 +651,16 @@ const filteredUsers = users.filter((user) => {
       </div>
       <Divider sx={{ my: 4 }} />
       {/* Tasks Section */}
-      <Typography variant="h5" gutterBottom>
+      <Typography
+        variant="h5"
+        gutterBottom
+        sx={{
+          fontWeight: "bold",
+          color: "#3f51b5",
+          display: "inline-block",
+          fontFamily: "'Segoe UI', Roboto, sans-serif",
+        }}
+      >
         Tasks (Page {tasksPage} of {tasksTotalPages})
       </Typography>
       <Typography variant="body1">

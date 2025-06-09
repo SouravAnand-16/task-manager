@@ -287,7 +287,17 @@ const UserDashboard = () => {
         flexWrap: "wrap",
       }}
     >
-      <Typography variant="h5" fontWeight="bold" mb={1}>
+      <Typography
+        variant="h5"
+        fontWeight="bold"
+        mb={1}
+        sx={{
+          fontWeight: "bold",
+          color: "#3f51b5",
+          display: "inline-block",
+          fontFamily: "'Segoe UI', Roboto, sans-serif",
+        }}
+      >
         🧑‍💻 User Dashboard
       </Typography>
 
