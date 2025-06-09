@@ -501,8 +501,7 @@ const UserDashboard = () => {
                           alignItems: "center",
                           gap: "6px",
                           color: "#5c6bc0",
-                          fontWeight:
-                            isOverdue || isDueSoon ? "bold" : "normal",
+                          fontWeight:500,
                           fontStyle: isOverdue ? "italic" : "normal",
                         }}
                         title={

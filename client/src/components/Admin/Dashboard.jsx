@@ -208,11 +208,13 @@ const AdminDashboard = () => {
 
   // Toggle user status
   const handleToggleUserStatus = async (userId, currentStatus) => {
+    const msg = "" ;
     try {
-      await toggleUserStatus(userId, currentStatus);
+      const res = await toggleUserStatus(userId, currentStatus);
       loadUsers(usersPage);
     } catch (err) {
       console.error("Failed to update user status:", err);
+      alert(`${data.message}`)
     }
   };
 
@@ -379,42 +381,71 @@ const AdminDashboard = () => {
       >
         {/* Users Table */}
         <Box sx={{ flex: 2, minWidth: "300px" }}>
-          <TableContainer component={Paper} sx={{ flex: 1 }}>
-            <Table sx={{ borderCollapse: "collapse" }}>
-              <TableHead sx={{ backgroundColor: "#f0f0f0" }}>
-                <TableRow>
-                  <TableCell sx={{ fontWeight: "bold" }}>Username</TableCell>
-                  <TableCell sx={{ fontWeight: "bold" }}>Role</TableCell>
-                  <TableCell sx={{ width: "60px", fontWeight: "bold" }}>
+          <TableContainer
+            component={Paper}
+            elevation={3}
+            sx={{
+              borderRadius: 2,
+              overflow: "hidden",
+            }}
+          >
+            <Table>
+              <TableHead>
+                <TableRow sx={{ backgroundColor: "#e8eaf6" }}>
+                  <TableCell sx={{ fontWeight: "bold", color: "#3f51b5" }}>
+                    Username
+                  </TableCell>
+                  <TableCell sx={{ fontWeight: "bold", color: "#3f51b5" }}>
+                    Role
+                  </TableCell>
+                  <TableCell
+                    sx={{
+                      fontWeight: "bold",
+                      color: "#3f51b5",
+                      textAlign: "center",
+                    }}
+                  >
                     Status
                   </TableCell>
                 </TableRow>
               </TableHead>
+
               <TableBody>
                 {users.map((user) => (
-                  <TableRow key={user._id}>
-                    <TableCell sx={{ fontStyle: "italic", color: "#888" }}>
+                  <TableRow
+                    key={user._id}
+                    hover
+                    sx={{
+                      "&:hover": {
+                        backgroundColor: "#f5f5f5",
+                      },
+                    }}
+                  >
+                    <TableCell sx={{ fontStyle: "italic", color: "#555" }}>
                       {user.username?.toUpperCase()}
                     </TableCell>
-                    <TableCell sx={{ fontStyle: "italic", color: "#888" }}>
+                    <TableCell sx={{ fontStyle: "italic", color: "#555" }}>
                       {user.role}
                     </TableCell>
-                    <TableCell>
+                    <TableCell align="center">
                       <Button
                         size="small"
                         variant="outlined"
                         color={user.status === "active" ? "success" : "error"}
                         sx={{
-                          padding: "2px 6px",
-                          fontSize: "0.65rem",
-                          minWidth: "60px",
-                          width: "60px",
+                          px: 1.5,
+                          py: 0.5,
+                          fontSize: "0.7rem",
+                          borderRadius: "16px",
+                          minWidth: "auto",
+                          fontWeight: "bold",
+                          letterSpacing: 0.5,
                         }}
                         onClick={() =>
                           handleToggleUserStatus(user._id, user.status)
                         }
                       >
-                        {user.status === "active" ? "🟢" : "🔴"}
+                        {user.status === "active" ? "Active" : "Inactive"}
                       </Button>
                     </TableCell>
                   </TableRow>
@@ -422,13 +453,23 @@ const AdminDashboard = () => {
               </TableBody>
             </Table>
           </TableContainer>
-          <Box sx={{ mt: 2 }}>
+
+          {/* Pagination */}
+          <Box sx={{ mt: 3, display: "flex", justifyContent: "center" }}>
             <Stack direction="row" spacing={2}>
               <Button
+                variant="contained"
+                size="small"
+                sx={{
+                  backgroundColor: "#c5cae9",
+                  color: "#1a237e",
+                  "&:hover": { backgroundColor: "#9fa8da" },
+                  textTransform: "none",
+                }}
                 disabled={usersPage <= 1 || loadUserList === "prev"}
                 onClick={() => {
                   setLoadUserList("prev");
-                  loadUsers(tasksPage - 1).finally(() => setLoadUserList(null));
+                  loadUsers(usersPage - 1).finally(() => setLoadUserList(null));
                 }}
               >
                 {loadUserList === "prev" ? (
@@ -436,10 +477,19 @@ const AdminDashboard = () => {
                     <i className="fas fa-spinner fa-spin"></i> Loading...
                   </span>
                 ) : (
-                  "Previous"
+                  "← Previous"
                 )}
               </Button>
+
               <Button
+                variant="contained"
+                size="small"
+                sx={{
+                  backgroundColor: "#c5cae9",
+                  color: "#1a237e",
+                  "&:hover": { backgroundColor: "#9fa8da" },
+                  textTransform: "none",
+                }}
                 disabled={
                   usersPage >= usersTotalPages || loadUserList === "next"
                 }
@@ -453,7 +503,7 @@ const AdminDashboard = () => {
                     <i className="fas fa-spinner fa-spin"></i> Loading...
                   </span>
                 ) : (
-                  "Next"
+                  "Next →"
                 )}
               </Button>
             </Stack>
@@ -670,9 +720,9 @@ const AdminDashboard = () => {
           </Button>
         </DialogActions>
       </Dialog>
-      <TableContainer component={Paper}>
+      <TableContainer component={Paper} elevation={3} sx={{ borderRadius: 2 }}>
         <Table sx={{ borderCollapse: "collapse" }}>
-          <TableHead sx={{ backgroundColor: "#f0f0f0" }}>
+          <TableHead sx={{ backgroundColor: "#f5f5f5" }}>
             <TableRow>
               <TableCell padding="checkbox" sx={{ fontWeight: "bold" }}>
                 <Checkbox
@@ -687,7 +737,6 @@ const AdminDashboard = () => {
               <TableCell sx={{ fontWeight: "bold" }}>Description</TableCell>
               <TableCell sx={{ fontWeight: "bold" }}>Status</TableCell>
               <TableCell sx={{ fontWeight: "bold" }}>Assigned To</TableCell>
-              {/* <TableCell sx={{ fontWeight: "bold" }}>Status</TableCell> */}
               <TableCell sx={{ fontWeight: "bold" }}>Due Date</TableCell>
               <TableCell sx={{ fontWeight: "bold" }}>Actions</TableCell>
             </TableRow>
@@ -703,7 +752,14 @@ const AdminDashboard = () => {
                 dueDate.getTime() - now.getTime() <= 2 * 24 * 60 * 60 * 1000;
 
               return (
-                <TableRow key={task._id}>
+                <TableRow
+                  key={task._id}
+                  hover
+                  sx={{
+                    "&:hover": { backgroundColor: "#f9f9f9" },
+                    transition: "background 0.3s ease",
+                  }}
+                >
                   <TableCell padding="checkbox">
                     <Checkbox
                       checked={selectedTaskIds.has(task._id)}
@@ -711,26 +767,30 @@ const AdminDashboard = () => {
                     />
                   </TableCell>
 
-                  <TableCell sx={{ fontWeight: 400, color: "#333" }}>
+                  <TableCell sx={{ fontWeight: 500, color: "#333" }}>
                     {task.title}
                   </TableCell>
 
-                  <TableCell sx={{ fontStyle: "italic", color: "#777" }}>
+                  <TableCell sx={{ fontStyle: "italic", color: "#666" }}>
                     {task.description}
                   </TableCell>
 
                   <TableCell>
                     <span
                       style={{
-                        fontWeight: "400",
-                        color: task.completed ? "#4caf50" : "#f44336",
+                        padding: "2px 6px",
+                        borderRadius: "6px",
+                        fontSize: "0.75rem",
+                        fontWeight: "500",
+                        backgroundColor: task.completed ? "#e8f5e9" : "#ffebee",
+                        color: task.completed ? "#388e3c" : "#c62828",
                       }}
                     >
                       {task.completed ? "Completed" : "Pending"}
                     </span>
                   </TableCell>
 
-                  <TableCell sx={{ fontStyle: "italic", color: "#777" }}>
+                  <TableCell sx={{ fontStyle: "italic", color: "#555" }}>
                     {getUsernameById(task.assignedTo)}
                   </TableCell>
 
@@ -742,9 +802,7 @@ const AdminDashboard = () => {
                           alignItems: "center",
                           gap: "6px",
                           color: "#5c6bc0",
-                          fontWeight:
-                            isOverdue || isDueSoon ? "bold" : "normal",
-                          fontStyle: isOverdue ? "italic" : "normal",
+                          fontWeight: 500,
                         }}
                         title={
                           isOverdue
@@ -766,21 +824,22 @@ const AdminDashboard = () => {
                         {dueDate.toLocaleDateString()}
                       </span>
                     ) : (
-                      "N/A"
+                      <span style={{ color: "#999" }}>N/A</span>
                     )}
                   </TableCell>
 
                   <TableCell>
-                    <div style={{ display: "flex" }}>
+                    <div style={{ display: "flex", gap: "10px" }}>
                       <button
                         onClick={() => handleOpenEdit(task)}
                         disabled={loadingIds.has(task._id)}
                         title="Edit Task"
                         style={{
-                          marginRight: "8px",
                           border: "none",
                           background: "transparent",
                           cursor: "pointer",
+                          color: "#1976d2",
+                          fontSize: "1rem",
                         }}
                       >
                         {loadingIds.has(task._id) ? (
@@ -798,6 +857,8 @@ const AdminDashboard = () => {
                           border: "none",
                           background: "transparent",
                           cursor: "pointer",
+                          color: "#d32f2f",
+                          fontSize: "1rem",
                         }}
                       >
                         {loadingIds.has(task._id) ? (
