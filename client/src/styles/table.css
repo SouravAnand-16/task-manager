@@ -1,0 +1,57 @@
+.status-chip {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.status-chip.completed {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.status-chip.pending {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+.priority-badge {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 8px;
+  font-size: 0.7rem;
+  font-weight: bold;
+  text-transform: capitalize;
+  color: white;
+}
+
+.priority-low {
+  background-color: #5bc0de;
+}
+
+.priority-medium {
+  background-color: #f0ad4e;
+}
+
+.priority-high {
+  background-color: #d9534f;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.action-buttons button {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: transform 0.1s ease;
+}
+
+.action-buttons button:hover {
+  transform: scale(1.1);
+}

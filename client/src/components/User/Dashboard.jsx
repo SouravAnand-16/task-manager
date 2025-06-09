@@ -32,6 +32,7 @@ import {
   deleteTask,
 } from "../../../src/utils/util";
 import Loader from "../common/Loader";
+import "../../styles/table.css"
 
 const PAGE_SIZE = 5;
 
@@ -396,15 +397,15 @@ const UserDashboard = () => {
           </Button>
         </DialogActions>
       </Dialog>
-      <TableContainer component={Paper}>
-        <Table sx={{ borderCollapse: "collapse" }}>
-          <TableHead sx={{ backgroundColor: "#f0f0f0" }}>
+      <TableContainer component={Paper} sx={{ overflowX: "auto" }}>
+        <Table sx={{ borderCollapse: "collapse", minWidth: 800 }}>
+          <TableHead sx={{ backgroundColor: "#f7f9fc" }}>
             <TableRow>
-              <TableCell padding="checkbox" sx={{ fontWeight: "bold" }}>
+              <TableCell padding="checkbox">
                 <Checkbox
                   checked={
                     tasks.length > 0 &&
-                    tasks.every((task) => selectedTaskIds.has(task._id))
+                    tasks.every((t) => selectedTaskIds.has(t._id))
                   }
                   onChange={toggleSelectAll}
                 />
@@ -412,89 +413,126 @@ const UserDashboard = () => {
               <TableCell sx={{ fontWeight: "bold" }}>Title</TableCell>
               <TableCell sx={{ fontWeight: "bold" }}>Description</TableCell>
               <TableCell sx={{ fontWeight: "bold" }}>Status</TableCell>
+              <TableCell sx={{ fontWeight: "bold" }}>Priority</TableCell>
               <TableCell sx={{ fontWeight: "bold" }}>Due Date</TableCell>
-              <TableCell></TableCell>
+              <TableCell sx={{ fontWeight: "bold" }}>Actions</TableCell>
             </TableRow>
           </TableHead>
+
           <TableBody>
-            {filteredTasks.map((task) => (
-              <TableRow key={task._id}>
-                <TableCell padding="checkbox" sx={{ fontWeight: "bold" }}>
-                  <Checkbox
-                    checked={selectedTaskIds.has(task._id)}
-                    onChange={() => toggleTaskSelection(task._id)}
-                  />
-                </TableCell>
-                <TableCell
-                  sx={{
-                    fontWeight: 600,
-                    color: "#555",
-                  }}
-                >
-                  {task.title}
-                </TableCell>
-                <TableCell
-                  sx={{
-                    fontStyle: "italic",
-                    color: "#888",
-                  }}
-                >
-                  {task.description}
-                </TableCell>
-                <TableCell>
-                  <span style={{ color: task.completed ? "green" : "red" }}>
-                    {task.completed ? "Completed" : "Pending"}
-                  </span>
-                </TableCell>
+            {filteredTasks.map((task) => {
+              const dueDate = task.dueDate ? new Date(task.dueDate) : null;
+              const now = new Date();
+              const isOverdue = dueDate && dueDate < now;
+              const isDueSoon =
+                dueDate &&
+                dueDate.getTime() - now.getTime() <= 2 * 24 * 60 * 60 * 1000;
 
-                <TableCell
-                  sx={{
-                    fontStyle: "italic",
-                    color: "#e69500",
-                  }}
-                >
-                  {task.dueDate
-                    ? new Date(task.dueDate).toLocaleDateString()
-                    : "N/A"}
-                </TableCell>
-                <TableCell>
-                  <div style={{ display: "flex" }}>
-                    <button
-                      onClick={() => handleOpenEdit(task)}
-                      disabled={loadingIds.has(task._id)}
-                      style={{
-                        marginRight: "8px",
-                        border: "none",
-                        background: "transparent",
-                        cursor: "pointer",
-                      }}
-                    >
-                      {loadingIds.has(task._id) ? (
-                        <i className="fas fa-spinner fa-spin"></i>
-                      ) : (
-                        <i className="fas fa-edit"></i>
-                      )}
-                    </button>
+              return (
+                <TableRow key={task._id} hover>
+                  <TableCell padding="checkbox">
+                    <Checkbox
+                      checked={selectedTaskIds.has(task._id)}
+                      onChange={() => toggleTaskSelection(task._id)}
+                    />
+                  </TableCell>
 
-                    <button
-                      onClick={() => handleDeleteTask(task._id)}
-                      disabled={loadingIds.has(task._id)}
+                  <TableCell sx={{ fontWeight: 400, color: "#333" }}>
+                    {task.title}
+                  </TableCell>
+
+                  <TableCell sx={{ fontStyle: "italic", color: "#777" }}>
+                    {task.description}
+                  </TableCell>
+
+                  <TableCell>
+                    <span
                       style={{
-                        border: "none",
-                        background: "transparent",
-                        cursor: "pointer",
+                        fontWeight: "400",
+                        color: task.completed ? "green" : "red",
                       }}
+                      title={
+                        task.completed
+                          ? "This task is completed."
+                          : "Task is pending."
+                      }
                     >
-                      {loadingIds.has(task._id) ? (
-                        <i className="fas fa-spinner fa-spin"></i>
-                      ) : (
-                        <i className="fas fa-trash-alt"></i>
-                      )}
-                    </button>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
+                      {task.completed ? "Completed" : "Pending"}
+                    </span>
+                  </TableCell>
+
+                  <TableCell>
+                    <span
+                      className={`priority-badge priority-${
+                        task.priority || "low"
+                      }`}
+                    >
+                      {task.priority || "low"}
+                    </span>
+                  </TableCell>
+
+                  <TableCell>
+                    {dueDate ? (
+                      <span
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "6px",
+                          color: isOverdue
+                            ? "red"
+                            : isDueSoon
+                            ? "#d9a800"
+                            : "green",
+                          fontWeight:
+                            isOverdue || isDueSoon ? "bold" : "normal",
+                          fontStyle: "italic",
+                        }}
+                        title={
+                          isOverdue
+                            ? "Overdue: Task should have been completed."
+                            : isDueSoon
+                            ? "Due Soon: Task is nearing its due date."
+                            : "On Track: Task is not urgent yet."
+                        }
+                      >
+                        <i className="fas fa-exclamation-triangle"></i>
+                        {dueDate.toLocaleDateString()}
+                      </span>
+                    ) : (
+                      "N/A"
+                    )}
+                  </TableCell>
+
+                  <TableCell>
+                    <div className="action-buttons">
+                      <button
+                        onClick={() => handleOpenEdit(task)}
+                        disabled={loadingIds.has(task._id)}
+                        title="Edit Task"
+                      >
+                        {loadingIds.has(task._id) ? (
+                          <i className="fas fa-spinner fa-spin"></i>
+                        ) : (
+                          <i className="fas fa-edit"></i>
+                        )}
+                      </button>
+
+                      <button
+                        onClick={() => handleDeleteTask(task._id)}
+                        disabled={loadingIds.has(task._id)}
+                        title="Delete Task"
+                      >
+                        {loadingIds.has(task._id) ? (
+                          <i className="fas fa-spinner fa-spin"></i>
+                        ) : (
+                          <i className="fas fa-trash-alt"></i>
+                        )}
+                      </button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              );
+            })}
           </TableBody>
         </Table>
       </TableContainer>
