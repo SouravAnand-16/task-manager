@@ -562,8 +562,8 @@ const AdminDashboard = () => {
       {/* // Task Table Functionality */}
       <Box display="flex" flexWrap="wrap" gap="6px" alignItems="center" mb={2}>
         <Button
-          variant="contained"
-          color="primary"
+          variant="outlined"
+          // color="primary"
           size="small"
           onClick={() => setBulkModalOpen(true)}
           sx={{ width: "fit-content" }}

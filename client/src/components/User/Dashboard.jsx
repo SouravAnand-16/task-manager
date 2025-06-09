@@ -318,7 +318,7 @@ const UserDashboard = () => {
           <Button
             variant="outlined"
             size="small"
-            sx={{ minWidth: 130 }}
+            sx={{ width:"fit-content" }}
             onClick={() => setBulkModalOpen(true)}
           >
             🔁 Bulk Update

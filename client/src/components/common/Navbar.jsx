@@ -1,13 +1,29 @@
 import React, { useState } from 'react';
-import { AppBar, Toolbar, Typography, Button, Avatar, Menu, MenuItem, Dialog, DialogTitle, DialogContent, TextField, DialogActions } from '@mui/material';
+import {
+  AppBar,
+  Toolbar,
+  Typography,
+  Button,
+  Avatar,
+  Menu,
+  MenuItem,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  TextField,
+  DialogActions,
+  Stack,
+  Box,
+} from '@mui/material';
 import { useDispatch, useSelector } from 'react-redux';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { logout, setUser } from '../../redux/userSlice';
 
 const Navbar = () => {
-  const { user } = useSelector(state => state.user);
+  const { user } = useSelector((state) => state.user);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [anchorEl, setAnchorEl] = useState(null);
   const [editOpen, setEditOpen] = useState(false);
@@ -35,73 +51,97 @@ const Navbar = () => {
     setEditOpen(false);
   };
 
+  const navLinkStyle = (path) => ({
+    color: location.pathname === path ? '#ffeb3b' : '#ffffff',
+    fontWeight: location.pathname === path ? 'bold' : 'normal',
+    borderBottom: location.pathname === path ? '2px solid #ffeb3b' : 'none',
+    borderRadius: 0,
+    textTransform: 'capitalize',
+  });
+
   return (
     <>
-      <AppBar position="static" sx={{ backgroundColor: "##9575cd" }}>
+      <AppBar
+        position="static"
+        sx={{
+          background: 'linear-gradient(to right, #7b1fa2, #512da8)',
+          boxShadow: 3,
+        }}
+      >
         <Toolbar
           sx={{
-            display: "flex",
-            flexDirection: { xs: "column", sm: "row" },
-            alignItems: { xs: "flex-start", sm: "center" },
-            justifyContent: "space-between",
-            gap: { xs: 1, sm: 0 },
+            flexWrap: 'wrap',
+            gap: 2,
+            justifyContent: 'space-between',
+            alignItems: 'center',
             px: 2,
-            py: { xs: 1, sm: 0 },
           }}
         >
           <Typography
             variant="h6"
             component={Link}
             to="/"
-            sx={{ textDecoration: "none", color: "#fff", mb: { xs: 1, sm: 0 } }}
+            sx={{
+              textDecoration: 'none',
+              color: '#fff',
+              fontWeight: 'bold',
+              fontSize: '1.4rem',
+              letterSpacing: '1px',
+            }}
           >
             Task Manager
           </Typography>
 
-          {!user ? (
-            <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
-              <Button color="inherit" component={Link} to="/login">
-                Login
-              </Button>
-              <Button color="inherit" component={Link} to="/register">
-                Register
-              </Button>
-            </div>
-          ) : (
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "10px",
-                flexWrap: "wrap",
-              }}
-            >
-              {/* <Typography>Welcome, {user.username?.toUpperCase()}</Typography> */}
-              {user.role === "admin" ? (
-                <Button color="inherit" component={Link} to="/admin">
-                  Admin Panel
+          <Stack
+            direction="row"
+            spacing={2}
+            flexWrap="wrap"
+            justifyContent="center"
+            alignItems="center"
+          >
+            <Button component={Link} to="/" sx={navLinkStyle('/')}>
+              Home
+            </Button>
+
+            {!user ? (
+              <>
+                <Button component={Link} to="/login" sx={navLinkStyle('/login')}>
+                  Login
                 </Button>
-              ) : (
-                <Button color="inherit" component={Link} to="/user">
-                  User Panel
+                <Button component={Link} to="/register" sx={navLinkStyle('/register')}>
+                  Register
                 </Button>
-              )}
-              <Avatar
-                onClick={handleMenuOpen}
-                sx={{ bgcolor: "secondary.main", cursor: "pointer" }}
-              >
-                {user.username[0]?.toUpperCase()}
-              </Avatar>
-              <Menu
-                anchorEl={anchorEl}
-                open={Boolean(anchorEl)}
-                onClose={handleMenuClose}
-              >
-                <MenuItem onClick={handleEditOpen}>Edit Profile</MenuItem>
-                <MenuItem onClick={handleLogout}>Logout</MenuItem>
-              </Menu>
-            </div>
-          )}
+              </>
+            ) : (
+              <>
+                <Button
+                  component={Link}
+                  to={user.role === 'admin' ? '/admin' : '/user'}
+                  sx={navLinkStyle(user.role === 'admin' ? '/admin' : '/user')}
+                >
+                  {user.role === 'admin' ? 'Admin Panel' : 'User Panel'}
+                </Button>
+                <Box>
+                  <Avatar
+                    onClick={handleMenuOpen}
+                    sx={{
+                      bgcolor: '#ffb300',
+                      cursor: 'pointer',
+                      fontWeight: 'bold',
+                      width: 40,
+                      height: 40,
+                    }}
+                  >
+                    {user.username[0]?.toUpperCase()}
+                  </Avatar>
+                  <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose}>
+                    <MenuItem onClick={handleEditOpen}>Edit Profile</MenuItem>
+                    <MenuItem onClick={handleLogout}>Logout</MenuItem>
+                  </Menu>
+                </Box>
+              </>
+            )}
+          </Stack>
         </Toolbar>
       </AppBar>
 
@@ -121,7 +161,7 @@ const Navbar = () => {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setEditOpen(false)}>Cancel</Button>
-          <Button onClick={handleEditSave} variant="contained">
+          <Button onClick={handleEditSave} variant="contained" color="primary">
             Save
           </Button>
         </DialogActions>
