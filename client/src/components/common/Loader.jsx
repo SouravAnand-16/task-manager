@@ -3,8 +3,10 @@ import "../../styles/loader.css";
 
 const Loader = () => {
   return (
-    <div className="loader-container">
-      <div className="loader-spinner"></div>
+     <div className="loader-container">
+      <div className="loader-ring-outer">
+        <div className="loader-ring-inner"></div>
+      </div>
     </div>
   );
 };
