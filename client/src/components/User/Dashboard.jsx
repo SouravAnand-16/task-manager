@@ -25,6 +25,7 @@ import {
   InputLabel,
   Select,
   MenuItem,
+  Tooltip,
 } from "@mui/material";
 import CircularProgress from '@mui/material/CircularProgress';
 
@@ -315,21 +316,30 @@ const UserDashboard = () => {
             gap: 2,
           }}
         >
-          <Button
-            variant="outlined"
-            size="small"
-            sx={{ width: "fit-content" }}
-            onClick={() => setBulkModalOpen(true)}
+          <Tooltip
+            title={
+              selectedTaskIds.size === 0
+                ? "Select tasks to enable"
+                : "Bulk update selected tasks"
+            }
           >
-            🔁 Bulk Update
-          </Button>
+            <span>
+              <Button
+                variant="outlined"
+                size="small"
+                onClick={() => setBulkModalOpen(true)}
+                disabled={selectedTaskIds.size === 0}
+                sx={{ width: "fit-content" }}
+              >
+                Bulk Update
+              </Button>
+            </span>
+          </Tooltip>
 
           <TextField
             type="date"
             size="small"
-            label="Filter by Due Date"
-            value={dueDateFilter}
-            onChange={(e) => setDueDateFilter(e.target.value)}
+            label="Filter by Username"
             sx={{ minWidth: 150 }}
             InputLabelProps={{ shrink: true }}
           />
@@ -363,7 +373,7 @@ const UserDashboard = () => {
           sx={{
             backgroundColor: "#5c6bc0",
             "&:hover": {
-              backgroundColor: "#3f51b5", 
+              backgroundColor: "#3f51b5",
             },
           }}
         >
@@ -501,7 +511,7 @@ const UserDashboard = () => {
                           alignItems: "center",
                           gap: "6px",
                           color: "#5c6bc0",
-                          fontWeight:500,
+                          fontWeight: 500,
                           fontStyle: isOverdue ? "italic" : "normal",
                         }}
                         title={

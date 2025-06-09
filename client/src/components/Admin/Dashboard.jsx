@@ -25,6 +25,7 @@ import {
   InputLabel,
   Select,
   MenuItem,
+  Tooltip,
   useTheme,
   useMediaQuery,
 } from "@mui/material";
@@ -43,12 +44,14 @@ const PAGE_SIZE = 5;
 
 const AdminDashboard = () => {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  // const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const { user } = useSelector((state) => state.user);
   // Users state
   const [users, setUsers] = useState([]);
   const [usersPage, setUsersPage] = useState(1);
   const [usersTotalPages, setUsersTotalPages] = useState(1);
+  const [userSearchInput, setUserSearchInput] = useState("");
+  const [filterText, setFilterText] = useState("");
 
   // Tasks state
   const [tasks, setTasks] = useState([]);
@@ -316,6 +319,22 @@ const AdminDashboard = () => {
     return matchAssigned && matchStatus && matchDueDate;
   });
 
+const filteredUsers = users.filter((user) => {
+  const trimmed = filterText.trim().toLowerCase();
+
+  if (trimmed.startsWith("{role=")) {
+    const roleValue = trimmed.split("=")[1]?.replace("}", "").trim();
+    return user.role.toLowerCase() === roleValue;
+  }
+
+  if (trimmed.startsWith("{username=")) {
+    const usernameValue = trimmed.split("=")[1]?.replace("}", "").trim();
+    return user.username.toLowerCase().includes(usernameValue);
+  }
+
+  return true;
+});
+
   useEffect(() => {
     loadUsers(usersPage);
     loadTasks(tasksPage);
@@ -341,36 +360,38 @@ const AdminDashboard = () => {
         Users (Page {usersPage} of {usersTotalPages})
       </Typography>
       {/* //Users Filter */}
-      <Box
+      <TextField
+        size="small"
+        variant="outlined"
+        value={filterText}
+        onChange={(e) => setFilterText(e.target.value)}
+        placeholder="Filter by {role=user} or {username=rohit}"
         sx={{
-          display: "flex",
-          flexWrap: "wrap",
-          gap: 2,
+          minWidth:"300px",
+          maxWidth:"770px",
+          backgroundColor: "#f9f9f9",
+          borderRadius: "8px",
+          "& .MuiOutlinedInput-root": {
+            "& fieldset": {
+              borderColor: "#ccc",
+            },
+            "&:hover fieldset": {
+              borderColor: "#5c6bc0",
+            },
+            "&.Mui-focused fieldset": {
+              borderColor: "#3f51b5",
+            },
+            fontSize: "0.9rem",
+            color: "#333",
+            paddingLeft: 1,
+          },
+          "& input::placeholder": {
+            color: "#999",
+            fontStyle: "italic",
+            fontSize: "0.85rem",
+          },
         }}
-      >
-        <TextField
-          type="date"
-          size="small"
-          label="Filter by Due Date"
-          value={dueDateFilter}
-          // onChange={(e) => setDueDateFilter(e.target.value)}
-          sx={{ minWidth: 150 }}
-          InputLabelProps={{ shrink: true }}
-        />
-
-        <FormControl size="small" sx={{ minWidth: 150 }}>
-          <InputLabel>Status</InputLabel>
-          <Select
-            value={statusFilter}
-            label="Status"
-            // onChange={(e) => setStatusFilter(e.target.value)}
-          >
-            <MenuItem value="">All Status</MenuItem>
-            <MenuItem value="completed">✅ Completed</MenuItem>
-            <MenuItem value="pending">🕒 Pending</MenuItem>
-          </Select>
-        </FormControl>
-      </Box>
+      />
       <div
         style={{
           display: "flex",
@@ -411,7 +432,7 @@ const AdminDashboard = () => {
               </TableHead>
 
               <TableBody>
-                {users.map((user) => (
+                {filteredUsers.map((user) => (
                   <TableRow
                     key={user._id}
                     hover
@@ -518,7 +539,9 @@ const AdminDashboard = () => {
             maxWidth: "350px",
             boxSizing: "border-box",
             border: "1px solid #ccc",
-            borderRadius: "25px",
+            borderRadius: "16px",
+            boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
+            backgroundColor: "#fff",
           }}
         >
           <Typography variant="h6" gutterBottom>
@@ -533,9 +556,11 @@ const AdminDashboard = () => {
             onChange={handleTaskInputChange}
             style={{
               width: "100%",
-              padding: "8px",
-              marginBottom: "10px",
-              fontSize: "0.9rem",
+              padding: "10px",
+              marginBottom: "12px",
+              fontSize: "0.95rem",
+              borderRadius: "4px",
+              border: "1px solid #ccc",
             }}
           />
 
@@ -546,13 +571,19 @@ const AdminDashboard = () => {
             onChange={handleTaskInputChange}
             style={{
               width: "95%",
-              padding: "8px",
-              marginBottom: "10px",
-              fontSize: "0.9rem",
+              padding: "10px",
+              marginBottom: "12px",
+              fontSize: "0.95rem",
+              borderRadius: "4px",
+              border: "1px solid #ccc",
+              resize: "vertical",
+              minHeight: "100px",
             }}
           />
 
-          <div style={{ display: "flex", gap: "8px", flexDirection: "column" }}>
+          <div
+            style={{ display: "flex", flexDirection: "column", gap: "12px" }}
+          >
             <input
               type="date"
               name="dueDate"
@@ -560,9 +591,10 @@ const AdminDashboard = () => {
               onChange={handleTaskInputChange}
               style={{
                 width: "100%",
-                padding: "8px",
-                marginBottom: "10px",
-                fontSize: "0.9rem",
+                padding: "10px",
+                fontSize: "0.95rem",
+                borderRadius: "4px",
+                border: "1px solid #ccc",
               }}
             />
 
@@ -573,9 +605,10 @@ const AdminDashboard = () => {
                 onChange={handleTaskInputChange}
                 style={{
                   width: "100%",
-                  padding: "8px",
-                  marginBottom: "10px",
-                  fontSize: "0.9rem",
+                  padding: "10px",
+                  fontSize: "0.95rem",
+                  borderRadius: "4px",
+                  border: "1px solid #ccc",
                 }}
               >
                 <option value="">Assign to User</option>
@@ -589,6 +622,7 @@ const AdminDashboard = () => {
               </select>
             )}
           </div>
+
           <Button
             variant="contained"
             size="small"
@@ -596,9 +630,9 @@ const AdminDashboard = () => {
             fullWidth
             sx={{
               backgroundColor: "#5c6bc0",
+              mt: 2,
               "&:hover": {
                 backgroundColor: "#3f51b5",
-                mt: 1,
               },
             }}
           >
@@ -616,16 +650,25 @@ const AdminDashboard = () => {
       </Typography>
       {/* // Task Table Functionality */}
       <Box display="flex" flexWrap="wrap" gap="6px" alignItems="center" mb={2}>
-        <Button
-          variant="outlined"
-          // color="primary"
-          size="small"
-          onClick={() => setBulkModalOpen(true)}
-          sx={{ width: "fit-content" }}
+        <Tooltip
+          title={
+            selectedTaskIds.size === 0
+              ? "Select tasks to enable"
+              : "Bulk update selected tasks"
+          }
         >
-          Bulk Update
-        </Button>
-
+          <span>
+            <Button
+              variant="outlined"
+              size="small"
+              onClick={() => setBulkModalOpen(true)}
+              disabled={selectedTaskIds.size === 0}
+              sx={{ width: "fit-content" }}
+            >
+              Bulk Update
+            </Button>
+          </span>
+        </Tooltip>
         <TextField
           label="Filter by User"
           variant="outlined"
