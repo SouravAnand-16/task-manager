@@ -39,16 +39,7 @@ This project allows users to register, log in, and manage personal tasks. Admins
 - 📦 Structured folder organization (MVC for backend, modular for frontend)
 
 ---
-
-## 🔐 Authentication Flow
-
-- Login returns a JWT and user object
-- Token is stored in localStorage
-- Protected routes require valid token
-- Admin-only APIs checked by role
-- When admin changes a user's status, all sessions are invalidated (`logoutAll` via token versioning)
-
----
+## BASE_URL= https://task-manager-m8tf.onrender.com (backend)
 
 ## 📡 API Endpoints
 
@@ -78,9 +69,9 @@ This project allows users to register, log in, and manage personal tasks. Admins
 |--------|-------------------------------|------------------------------|
 | GET    | `/api/tasks`                  | Get all tasks of logged-in user |
 | POST   | `/api/tasks`                  | Create new task             |
-| PATCH  | `/api/tasks/:id`              | Update task                 |
-| PATCH  | `/api/tasks/:id/complete`     | Mark task as complete       |
-| DELETE | `/api/tasks/:id`              | Delete task                 |
+| PATCH  | `/api/tasks/:taskId`              | Update task                 |
+| DELETE | `/api/tasks/:taskId`              | Delete task                 |
+| PATCH | `/api/tasks/bulk`              | Bulk update task                 |
 
 ---
 
