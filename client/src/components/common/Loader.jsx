@@ -1,12 +1,10 @@
-import React from 'react';
+// src/components/common/Loader.jsx
+import "../../styles/loader.css";
 
 const Loader = () => {
   return (
-    <div style={{
-      display: 'flex', justifyContent: 'center', alignItems: 'center',
-      height: '100vh', fontSize: '1.5rem'
-    }}>
-      Loading...
+    <div className="loader-container">
+      <div className="loader-spinner"></div>
     </div>
   );
 };

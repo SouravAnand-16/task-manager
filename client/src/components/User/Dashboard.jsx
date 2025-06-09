@@ -31,6 +31,7 @@ import {
   updateTask,
   deleteTask,
 } from "../../../src/utils/util";
+import Loader from "../common/Loader";
 
 const PAGE_SIZE = 5;
 
@@ -130,6 +131,7 @@ const UserDashboard = () => {
 
   // Selected tasks IDs (across pages)
   const [selectedTaskIds, setSelectedTaskIds] = useState(new Set());
+  const [loader,setLoader] = useState(true);
 
   const closeModal = () => {
     setNewTask({ title: "", description: "", dueDate: "" });
@@ -164,12 +166,15 @@ const UserDashboard = () => {
   //Load Tasks
   const loadTasks = async (page = 1) => {
     try {
+      setLoader(true);
       const data = await fetchTasks(page, PAGE_SIZE);
       setTasks(data.tasks);
       setTasksTotalPages(Math.ceil(data.total / PAGE_SIZE));
       setTasksPage(page);
     } catch (err) {
       console.error("Error loading tasks:", err);
+    } finally {
+      setLoader(false);
     }
   };
 
@@ -264,6 +269,7 @@ const UserDashboard = () => {
     loadTasks(tasksPage);
   }, []);
 
+  if (loader) return <Loader />;
   return (
     <Container
       maxWidth="lg"

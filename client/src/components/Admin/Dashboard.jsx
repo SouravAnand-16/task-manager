@@ -27,11 +27,11 @@ import {
   fetchUsers,
   toggleUserStatus,
   fetchTasks,
-  bulkUpdateTaskStatus,
   createTask,
   updateTask,
   deleteTask,
 } from '../../../src/utils/util';
+import Loader from '../common/Loader';
 
 const PAGE_SIZE = 5;
 
@@ -128,7 +128,7 @@ const AdminDashboard = () => {
     }
   };
 
-  const [loading, setLoading] = useState(false);
+  const [loader, setLoader] = useState(true);
   const [loadingButton, setLoadingButton] = useState(null);
   const [loadUserList, setLoadUserList] = useState(null);
   // Filters
@@ -186,12 +186,15 @@ const AdminDashboard = () => {
   //Load Tasks
   const loadTasks = async (page = 1) => {
     try {
+      setLoader(true);
       const data = await fetchTasks(page, PAGE_SIZE);
       setTasks(data.tasks);
       setTasksTotalPages(Math.ceil(data.total / PAGE_SIZE));
       setTasksPage(page);
     } catch (err) {
       console.error("Error loading tasks:", err);
+    } finally {
+      setLoader(false);
     }
   };
 
@@ -307,6 +310,9 @@ const AdminDashboard = () => {
     loadUsers(usersPage);
     loadTasks(tasksPage);
   }, []);
+
+  
+  if (loader) return <Loader />;
 
   return (
     <Container
