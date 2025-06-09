@@ -12,10 +12,22 @@ const profileRoutes = require('./profile/me');
 dotenv.config();
 const app = express();
 
+const allowedOrigins = [
+  "http://localhost:3000", 
+  "https://resilient-sable-b912ac.netlify.app" 
+];
+
 app.use(cors({
-  origin: 'http://localhost:3000',
-  credentials: true 
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  credentials: true
 }));
+
 app.use(express.json());
 
 
