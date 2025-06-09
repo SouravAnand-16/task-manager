@@ -21,6 +21,10 @@ import {
   DialogActions,
   TextField,
   FormControlLabel,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
 } from "@mui/material";
 import CircularProgress from '@mui/material/CircularProgress';
 
@@ -282,49 +286,69 @@ const UserDashboard = () => {
         flexWrap: "wrap",
       }}
     >
-      User Dashboard
-      {/* Tasks Section */}
-      <Typography variant="body1">
-        Selected Tasks: {selectedTaskIds.size}
+      <Typography variant="h5" fontWeight="bold" mb={1}>
+        🧑‍💻 User Dashboard
       </Typography>
-      <div
-        style={{
+
+      {/* Selected Tasks Info */}
+      <Typography variant="body1" color="text.secondary" fontSize="0.9rem">
+        Selected Tasks: <strong>{selectedTaskIds.size}</strong>
+      </Typography>
+
+      {/* Filters & Actions */}
+      <Box
+        sx={{
           display: "flex",
+          flexDirection: { xs: "column", sm: "row" },
+          alignItems: { xs: "stretch", sm: "center" },
+          justifyContent: "space-between",
           flexWrap: "wrap",
-          gap: "20px",
-          alignItems: "center",
-          marginBottom: "0.5rem",
+          gap: 2,
+          mb: 2,
         }}
       >
-        <button
-          style={{
-            padding: "4px 8px",
-            fontSize: "0.8rem",
-            width: "130px",
-            borderRadius: "4px",
-            border: "1px solid #ccc",
+        {/* Left-side Controls */}
+        <Box
+          sx={{
+            display: "flex",
+            flexWrap: "wrap",
+            gap: 2,
           }}
-          onClick={() => setBulkModalOpen(true)}
         >
-          Bulk Update
-        </button>
+          <Button
+            variant="outlined"
+            size="small"
+            sx={{ minWidth: 130 }}
+            onClick={() => setBulkModalOpen(true)}
+          >
+            🔁 Bulk Update
+          </Button>
 
-        <input
-          type="date"
-          value={dueDateFilter}
-          onChange={(e) => setDueDateFilter(e.target.value)}
-          style={{ padding: "8px", fontSize: "0.8rem", width: "130px" }}
-        />
-        <select
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-          style={{ padding: "8px", fontSize: "0.8rem", width: "130px" }}
-        >
-          <option value="">All Status</option>
-          <option value="completed">Completed</option>
-          <option value="pending">Pending</option>
-        </select>
-      </div>
+          <TextField
+            type="date"
+            size="small"
+            label="Filter by Due Date"
+            value={dueDateFilter}
+            onChange={(e) => setDueDateFilter(e.target.value)}
+            sx={{ minWidth: 150 }}
+            InputLabelProps={{ shrink: true }}
+          />
+
+          <FormControl size="small" sx={{ minWidth: 150 }}>
+            <InputLabel>Status</InputLabel>
+            <Select
+              value={statusFilter}
+              label="Status"
+              onChange={(e) => setStatusFilter(e.target.value)}
+            >
+              <MenuItem value="">All Status</MenuItem>
+              <MenuItem value="completed">✅ Completed</MenuItem>
+              <MenuItem value="pending">🕒 Pending</MenuItem>
+            </Select>
+          </FormControl>
+        </Box>
+      </Box>
+      
       <Box
         sx={{
           display: "flex",

@@ -21,6 +21,12 @@ import {
   DialogActions,
   TextField,
   FormControlLabel,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  useTheme,
+  useMediaQuery,
 } from "@mui/material";
 import CircularProgress from '@mui/material/CircularProgress';
 import {
@@ -36,6 +42,8 @@ import Loader from '../common/Loader';
 const PAGE_SIZE = 5;
 
 const AdminDashboard = () => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const { user } = useSelector((state) => state.user);
   // Users state
   const [users, setUsers] = useState([]);
@@ -330,6 +338,37 @@ const AdminDashboard = () => {
       <Typography variant="h5" gutterBottom>
         Users (Page {usersPage} of {usersTotalPages})
       </Typography>
+      {/* //Users Filter */}
+      <Box
+        sx={{
+          display: "flex",
+          flexWrap: "wrap",
+          gap: 2,
+        }}
+      >
+        <TextField
+          type="date"
+          size="small"
+          label="Filter by Due Date"
+          value={dueDateFilter}
+          // onChange={(e) => setDueDateFilter(e.target.value)}
+          sx={{ minWidth: 150 }}
+          InputLabelProps={{ shrink: true }}
+        />
+
+        <FormControl size="small" sx={{ minWidth: 150 }}>
+          <InputLabel>Status</InputLabel>
+          <Select
+            value={statusFilter}
+            label="Status"
+            // onChange={(e) => setStatusFilter(e.target.value)}
+          >
+            <MenuItem value="">All Status</MenuItem>
+            <MenuItem value="completed">✅ Completed</MenuItem>
+            <MenuItem value="pending">🕒 Pending</MenuItem>
+          </Select>
+        </FormControl>
+      </Box>
       <div
         style={{
           display: "flex",
@@ -519,50 +558,53 @@ const AdminDashboard = () => {
       <Typography variant="body1">
         Selected Tasks: {selectedTaskIds.size}
       </Typography>
-      <div
-        style={{
-          display: "flex",
-          flexWrap: "wrap",
-          gap: "20px",
-          alignItems: "center",
-          marginBottom: "0.5rem",
-        }}
-      >
-        <button
-          style={{
-            padding: "4px 8px",
-            fontSize: "0.8rem",
-            width: "130px",
-            borderRadius: "4px",
-            border: "1px solid #ccc",
-          }}
+
+      {/* // Task Table Functionality */}
+      <Box display="flex" flexWrap="wrap" gap="6px" alignItems="center" mb={2}>
+        <Button
+          variant="contained"
+          color="primary"
+          size="small"
           onClick={() => setBulkModalOpen(true)}
+          sx={{ width: "fit-content" }}
         >
           Bulk Update
-        </button>
-        <input
-          type="text"
-          placeholder="Filter by User"
+        </Button>
+
+        <TextField
+          label="Filter by User"
+          variant="outlined"
+          size="small"
           value={assignedToFilter}
           onChange={(e) => setAssignedToFilter(e.target.value)}
-          style={{ padding: "8px", fontSize: "0.8rem", width: "130px" }}
+          // sx={{ minWidth: 200 }}
         />
-        <input
+
+        <TextField
+          label="Due Date"
           type="date"
+          variant="outlined"
+          size="small"
           value={dueDateFilter}
           onChange={(e) => setDueDateFilter(e.target.value)}
-          style={{ padding: "8px", fontSize: "0.8rem", width: "130px" }}
+          InputLabelProps={{ shrink: true }}
+          sx={{ minWidth: 130 }}
         />
-        <select
+
+        <TextField
+          label="Status"
+          select
+          variant="outlined"
+          size="small"
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          style={{ padding: "8px", fontSize: "0.8rem", width: "130px" }}
+          sx={{ minWidth: 130 }}
         >
-          <option value="">All Status</option>
-          <option value="completed">Completed</option>
-          <option value="pending">Pending</option>
-        </select>
-      </div>
+          <MenuItem value="">All Status</MenuItem>
+          <MenuItem value="completed">Completed</MenuItem>
+          <MenuItem value="pending">Pending</MenuItem>
+        </TextField>
+      </Box>
       <Dialog open={editOpen} onClose={handleCloseEdit} fullWidth maxWidth="sm">
         <DialogTitle>Edit Task</DialogTitle>
         <DialogContent>
@@ -709,10 +751,10 @@ const AdminDashboard = () => {
                         }}
                         title={
                           isOverdue
-                            ? "Overdue: Task should have been completed."
+                            ? "Overdue"
                             : isDueSoon
-                            ? "Due Soon: Task is nearing its due date."
-                            : "On Track: Task is not urgent yet."
+                            ? "Due Soon"
+                            : "On Track"
                         }
                       >
                         <i className="fas fa-exclamation-triangle"></i>
