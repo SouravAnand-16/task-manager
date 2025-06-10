@@ -45,6 +45,11 @@ BASE_URL= https://task-manager-m8tf.onrender.com (backend)
 ----
 BASE_URL= https://resilient-sable-b912ac.netlify.app (client)
 
+## ADMIN Login Crendential:
+username: virat
+password: virat@123
+
+----
 ## 📡 API Endpoints
 
 ### 🔑 Auth
