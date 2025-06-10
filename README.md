@@ -10,6 +10,22 @@ This project allows users to register, log in, and manage personal tasks. Admins
 
 ---
 
+## 🌐 Project URLs
+
+- **Backend (API):** [`https://task-manager-m8tf.onrender.com`](https://task-manager-m8tf.onrender.com)  
+- **Frontend (Client App):** [`https://resilient-sable-b912ac.netlify.app`](https://resilient-sable-b912ac.netlify.app)
+
+---
+
+## 🔐 Admin Login Credentials
+
+| Username | Password   |
+|----------|------------|
+| `virat`  | `virat@123` |
+
+> ⚠️ Use the above credentials to log in as an Admin user.
+
+
 ## ⚙️ Tech Stack
 
 - **Frontend**: React.js (with Redux Toolkit), Material UI
@@ -37,17 +53,6 @@ This project allows users to register, log in, and manage personal tasks. Admins
 - 🌙 Light/Dark mode toggle
 - 📱 Fully responsive UI
 - 📦 Structured folder organization (MVC for backend, modular for frontend)
-
-----
-
-BASE_URL= https://task-manager-m8tf.onrender.com (backend)
-
-----
-BASE_URL= https://resilient-sable-b912ac.netlify.app (client)
-
-## ADMIN Login Crendential:
-username: virat
-password: virat@123
 
 ----
 ## 📡 API Endpoints
