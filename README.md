@@ -38,8 +38,10 @@ This project allows users to register, log in, and manage personal tasks. Admins
 - 📱 Fully responsive UI
 - 📦 Structured folder organization (MVC for backend, modular for frontend)
 
----
+----
+
 BASE_URL= https://task-manager-m8tf.onrender.com (backend)
+
 ----
 BASE_URL= https://resilient-sable-b912ac.netlify.app (client)
 
